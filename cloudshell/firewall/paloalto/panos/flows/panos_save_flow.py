@@ -7,6 +7,8 @@ from cloudshell.firewall.paloalto.panos.command_actions.system_actions import Sy
 
 
 class PanoOSSaveFlow(SaveConfigurationFlow):
+    CONF_FILE_NAME_LENGTH = 32
+
     def __init__(self, cli_handler, logger):
         super(PanoOSSaveFlow, self).__init__(cli_handler, logger)
 
@@ -30,7 +32,7 @@ class PanoOSSaveFlow(SaveConfigurationFlow):
 
         with self._cli_handler.get_cli_service(self._cli_handler.enable_mode) as enable_session:
             if configuration_type == "running-config":
-                config_file_name = connection_dict.get(UrlParser.FILENAME)
+                config_file_name = self._verify_config_name(connection_dict.get(UrlParser.FILENAME))
                 with enable_session.enter_mode(self._cli_handler.config_mode) as config_session:
                     save_conf_action = SystemConfigurationActions(config_session, self._logger)
                     save_conf_action.save_config(config_file_name)
@@ -46,3 +48,19 @@ class PanoOSSaveFlow(SaveConfigurationFlow):
                                        user=connection_dict.get(UrlParser.USERNAME),
                                        password=connection_dict.get(UrlParser.PASSWORD),
                                        remote_path=connection_dict.get(UrlParser.PATH))
+
+    def _verify_config_name(self, config_name):
+        """ Verify configuration name correctness
+
+        Config name example {resource_name}-{confguration_type}-{timestamp}
+        configuration_type - running/startup = 7ch
+        timestamp - ddmmyy-HHMMSS = 13ch
+        CloudShell reserves 7ch+13ch+2ch(two delimiters "-") = 22ch
+        """
+
+        reserved_length = 22
+
+        if reserved_length < self.CONF_FILE_NAME_LENGTH < len(config_name):
+            config_name = "-".join(config_name.split("-")[:-3])[:self.CONF_FILE_NAME_LENGTH-reserved_length]
+
+        return config_name

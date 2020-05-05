@@ -57,6 +57,7 @@ class PanOSRestoreFlow(RestoreConfigurationFlow):
             with enable_session.enter_mode(self._cli_handler.config_mode) as config_session:
                 restore_conf_action = SystemConfigurationActions(config_session, self._logger)
                 restore_conf_action.load_config(config_file_name)
+                restore_conf_action.commit_changes()
 
             if configuration_type == "running-config":
                 restore_actions.reload_device()
