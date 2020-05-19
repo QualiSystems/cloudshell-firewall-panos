@@ -48,7 +48,7 @@ class DefaultCommandMode(CommandMode):
 
 
 class ConfigCommandMode(CommandMode):
-    PROMPT = r'#\s*$'
+    PROMPT = r'[\[\(]edit[\)\]]\s*\S*#\s*$'
     ENTER_COMMAND = 'configure'
     EXIT_COMMAND = 'exit'
 
@@ -58,9 +58,6 @@ class ConfigCommandMode(CommandMode):
 
         :param context:
         """
-
-        self.resource_config = resource_config
-        self._api = api
 
         self.resource_config = resource_config
         self._api = api
