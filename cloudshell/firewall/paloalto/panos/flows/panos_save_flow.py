@@ -60,7 +60,11 @@ class PanoOSSaveFlow(SaveConfigurationFlow):
 
         reserved_length = 22
 
+        self._logger.debug("Original configuration name: {}".format(config_name))
         if reserved_length < self.CONF_FILE_NAME_LENGTH < len(config_name):
-            config_name = "-".join(config_name.split("-")[:-3])[:self.CONF_FILE_NAME_LENGTH-reserved_length]
+            splitted = config_name.split("-")
+            resource_name = "-".join(splitted[:-3])[:self.CONF_FILE_NAME_LENGTH-reserved_length]
+            config_name = "-".join([resource_name] + splitted[-3:])
+        self._logger.debug("Verified configuration name: {}".format(config_name))
 
         return config_name
