@@ -1,9 +1,9 @@
 #
-# PySNMP MIB module PAN-ENTITY-EXT-MIB (http://pysnmp.sf.net)
-# ASN.1 source http://mibs.snmplabs.com:80/asn1/PAN-ENTITY-EXT-MIB
-# Produced by pysmi-0.2.2 at Wed Oct 03 13:14:04 2018
+# PySNMP MIB module PAN-ENTITY-EXT-MIB (http://snmplabs.com/pysmi)
+# ASN.1 source file://D:\Data\MIBS\text_mibs\paloalto\PAN-ENTITY-EXT-MIB
+# Produced by pysmi-0.3.4 at Tue Dec 01 10:26:52 2020
 # On host ? platform ? version ? by user ?
-# Using Python version 2.7.14 (v2.7.14:84471935ed, Sep 16 2017, 20:19:30) [MSC v.1500 32 bit (Intel)]
+# Using Python version 2.7.10 (default, May 23 2015, 09:44:00) [MSC v.1500 64 bit (AMD64)]
 #
 Integer, ObjectIdentifier, OctetString = mibBuilder.importSymbols("ASN1", "Integer", "ObjectIdentifier", "OctetString")
 NamedValues, = mibBuilder.importSymbols("ASN1-ENUMERATION", "NamedValues")
