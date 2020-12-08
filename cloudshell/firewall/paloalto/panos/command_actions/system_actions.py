@@ -1,7 +1,11 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+import os
 import re
+import tftpy
+
+from cloudshell.firewall.paloalto.panos.helpers.temp_dir_context import TempDirContext
 
 from cloudshell.cli.command_template.command_template_executor import CommandTemplateExecutor
 from cloudshell.firewall.paloalto.panos.command_templates import configuration, firmware
@@ -102,25 +106,24 @@ class SystemActions(object):
                                                                                            file_type=file_type,
                                                                                            tftp_host=host,
                                                                                            port=port)
+            pattern = r"Received \d+ bytes in -?\d+.\d+ seconds"
         elif protocol.upper() == "SCP":
-            if password:
-                src = "{username}:{password}@{host}:{path}".format(username=user,
-                                                                   password=password,
-                                                                   host=host,
-                                                                   path=file_path)
-            else:
-                src = "{username}:@{host}:{path}".format(username=user,
-                                                         host=host,
-                                                         path=file_path)
+            src = "{username}@{host}:{path}".format(username=user,
+                                                    host=host,
+                                                    path=file_path)
+
+            action_map = {"[Pp]assword:": lambda session, logger: session.send_line(password, logger),
+                          "yes/no": lambda session, logger: session.send_line("yes", logger)}
 
             output = CommandTemplateExecutor(self._cli_service,
-                                             configuration.COPY_FROM_SCP).execute_command(src=src,
-                                                                                          file_type=file_type,
-                                                                                          port=port)
+                                             configuration.COPY_FROM_SCP,
+                                             action_map=action_map).execute_command(src=src,
+                                                                                    file_type=file_type,
+                                                                                    port=port)
+            pattern = r"{} saved".format(filename)
         else:
             raise Exception("Import {}".format(file_type), "Protocol type <{}> is unsupportable".format(protocol))
 
-        pattern = r"Received \d+ bytes in \d+.\d+ seconds"
         status_match = re.search(pattern, output, re.IGNORECASE)
 
         if not status_match:
@@ -128,43 +131,62 @@ class SystemActions(object):
             raise Exception("Import {file_type}".format(file_type=file_type),
                             "Import {file_type} failed. See logs for details".format(file_type=file_type))
 
-    def export_config(self, filename, protocol, host, port=None, user=None, password=None, remote_path=None):
-        """ Export configuration file to remote TFTP or SCP server """
+    def export_config(self, config_file_name, remote_file_name, protocol, host, port=None, user=None, password=None,
+                      remote_path=None):
+        """ Export configuration file to remote TFTP or SCP server
+        config_file_name - Name of configuration file on device
+        remote_file_name - Name of configuration file on remote SCP/TFTP Server
+        """
 
         if protocol.upper() == "TFTP":
             output = CommandTemplateExecutor(self._cli_service,
-                                             configuration.COPY_TO_TFTP).execute_command(filename=filename,
+                                             configuration.COPY_TO_TFTP).execute_command(filename=config_file_name,
                                                                                          tftp_host=host,
                                                                                          port=port)
+            self._rename_file_on_tftp(initial_file_name=config_file_name,
+                                      new_file_name=remote_file_name,
+                                      tftp_host=host,
+                                      tftp_port=port)
+            pattern = r"Sent \d+ bytes in -?\d+.\d+ seconds"
         elif protocol.upper() == "SCP":
             if remote_path.endswith("/"):
-                file_path = remote_path + filename
+                file_path = remote_path + remote_file_name
             else:
-                file_path = remote_path + "/" + filename
+                file_path = remote_path + "/" + remote_file_name
 
-            if password:
-                dst = "{username}:{password}@{host}:{path}".format(username=user,
-                                                                   password=password,
-                                                                   host=host,
-                                                                   path=file_path)
-            else:
-                dst = "{username}:@{host}:{path}".format(username=user,
-                                                         host=host,
-                                                         path=file_path)
+            dst = "{username}@{host}:{path}".format(username=user,
+                                                    host=host,
+                                                    path=file_path)
+
+            action_map = {"[Pp]assword:": lambda session, logger: session.send_line(password, logger),
+                          "yes/no": lambda session, logger: session.send_line("yes", logger)}
 
             output = CommandTemplateExecutor(self._cli_service,
-                                             configuration.COPY_TO_SCP).execute_command(filename=filename,
-                                                                                        dst=dst,
-                                                                                        port=port)
+                                             configuration.COPY_TO_SCP,
+                                             action_map=action_map).execute_command(filename=config_file_name,
+                                                                                    dst=dst,
+                                                                                    port=port)
+            pattern = r"{}\s+100%".format(config_file_name)
         else:
             raise Exception("Export configuration", "Protocol type <{}> is unsupportable".format(protocol))
 
-        pattern = r"Sent \d+ bytes in \d+.\d+ seconds"
         status_match = re.search(pattern, output, re.IGNORECASE)
 
         if not status_match:
             self._logger.error("Export configuration failed: {err}".format(err=output))
             raise Exception("Export configuration", "Export configuration failed. See logs for details")
+
+    def _rename_file_on_tftp(self, initial_file_name, new_file_name, tftp_host, tftp_port):
+        """  """
+        if tftp_port:
+            tftp = tftpy.TftpClient(host=tftp_host, port=int(tftp_port))
+        else:
+            tftp = tftpy.TftpClient(host=tftp_host)
+
+        with TempDirContext(new_file_name) as temp_dir:
+            tftp.download(filename=initial_file_name, output=os.path.join(temp_dir, new_file_name))
+            tftp.upload(filename=new_file_name, input=os.path.join(temp_dir, new_file_name))
+            # tftp.upload(filename="{}.xml".format(new_file_name), input=os.path.join(temp_dir, new_file_name))
 
     def reload_device(self, timeout=500, action_map=None, error_map=None):
         """ Reload device

@@ -31,8 +31,10 @@ class PanoOSSaveFlow(SaveConfigurationFlow):
         connection_dict = UrlParser.parse_url(folder_path)
 
         with self._cli_handler.get_cli_service(self._cli_handler.enable_mode) as enable_session:
+            # remote_file_name = "{}.xml".format(self._verify_config_name(connection_dict.get(UrlParser.FILENAME)))
+            remote_file_name = self._verify_config_name(connection_dict.get(UrlParser.FILENAME))
             if configuration_type == "running-config":
-                config_file_name = self._verify_config_name(connection_dict.get(UrlParser.FILENAME))
+                config_file_name = remote_file_name
                 with enable_session.enter_mode(self._cli_handler.config_mode) as config_session:
                     save_conf_action = SystemConfigurationActions(config_session, self._logger)
                     save_conf_action.save_config(config_file_name)
@@ -41,7 +43,8 @@ class PanoOSSaveFlow(SaveConfigurationFlow):
                 config_file_name = "running-config.xml"
 
             save_actions = SystemActions(enable_session, self._logger)
-            save_actions.export_config(filename=config_file_name,
+            save_actions.export_config(config_file_name=config_file_name,
+                                       remote_file_name=remote_file_name,
                                        protocol=connection_dict.get(UrlParser.SCHEME),
                                        host=connection_dict.get(UrlParser.HOSTNAME),
                                        port=connection_dict.get(UrlParser.PORT),
