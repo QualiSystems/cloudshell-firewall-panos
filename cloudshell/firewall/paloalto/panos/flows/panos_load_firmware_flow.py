@@ -1,26 +1,26 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-from cloudshell.devices.flows.action_flows import LoadFirmwareFlow
-from cloudshell.devices.networking_utils import UrlParser
+from cloudshell.shell.flows.firmware.basic_flow import AbstractFirmwareFlow
+from cloudshell.shell.flows.utils.networking_utils import UrlParser
+
 from cloudshell.firewall.paloalto.panos.command_actions.system_actions import SystemActions, FirmwareActions
 
 
-class PanOSLoadFirmwareFlow(LoadFirmwareFlow):
+class PanOSLoadFirmwareFlow(AbstractFirmwareFlow):
     FILE_TYPE = "software"
 
     def __init__(self, cli_handler, logger):
-        super(PanOSLoadFirmwareFlow, self).__init__(cli_handler, logger)
+        super(PanOSLoadFirmwareFlow, self).__init__(logger)
+        self._cli_handler = cli_handler
 
-    def execute_flow(self, path, vrf, timeout):
-        """Load a firmware onto the device
-
+    def _load_firmware_flow(self, path, vrf_management_name, timeout):
+        """Load a firmware onto the device.
         :param path: The path to the firmware file, including the firmware file name
-        :param vrf: Virtual Routing and Forwarding Name
+        :param vrf_management_name: Virtual Routing and Forwarding Name
         :param timeout:
         :return:
         """
-
         connection_dict = UrlParser.parse_url(path)
 
         with self._cli_handler.get_cli_service(self._cli_handler.enable_mode) as enable_session:
