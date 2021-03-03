@@ -9,6 +9,7 @@ from cloudshell.firewall.paloalto.panos.command_actions.system_actions import Sy
 
 class PanOSConfigurationFlow(AbstractConfigurationFlow):
     CONF_FILE_NAME_LENGTH = 32
+    FILE_TYPE = "configuration"
 
     def __init__(self, cli_handler, resource_config, logger):
         super(PanOSConfigurationFlow, self).__init__(logger, resource_config)

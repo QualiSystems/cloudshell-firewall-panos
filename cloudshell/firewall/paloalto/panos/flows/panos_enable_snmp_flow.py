@@ -29,6 +29,7 @@ class PanOSEnableSnmpFlow(object):
             self._cli_handler.config_mode
         ) as config_session:
             if "3" in snmp_parameters.version:
+                snmp_parameters.validate()
                 self._logger.info("Start creating SNMPv3 configuration")
                 snmp_actions = EnableDisableSnmpV3Actions(config_session,
                                                           self._logger,

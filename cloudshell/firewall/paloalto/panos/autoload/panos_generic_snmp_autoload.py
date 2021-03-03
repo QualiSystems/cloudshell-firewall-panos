@@ -97,23 +97,26 @@ class PanOSGenericSNMPAutoload(GenericSNMPAutoload):
                 )
                 if match:
                     parent_element = self._chassis.get(match.groupdict().get("ch_index"))
-                    port_object = self._resource_model.entities.Port(
-                        index=if_index,
-                        name=interface.port_name.replace("/", "-")
-                    )
+                    if parent_element:
+                        port_object = self._resource_model.entities.Port(
+                            index=if_index,
+                            name=interface.port_name.replace("/", "-")
+                        )
 
-                    port_object.mac_address = interface.if_mac
-                    port_object.l2_protocol_type = interface.if_type
-                    port_object.port_description = interface.if_port_description
-                    port_object.bandwidth = interface.if_speed
-                    port_object.mtu = interface.if_mtu
-                    port_object.duplex = interface.duplex
-                    port_object.adjacent = interface.adjacent
-                    port_object.auto_negotiation = interface.auto_negotiation
-                    port_object.ipv4_address = interface.ipv4_address
-                    port_object.ipv6_address = interface.ipv6_address
+                        port_object.mac_address = interface.if_mac
+                        port_object.l2_protocol_type = interface.if_type
+                        port_object.port_description = interface.if_port_description
+                        port_object.bandwidth = interface.if_speed
+                        port_object.mtu = interface.if_mtu
+                        port_object.duplex = interface.duplex
+                        port_object.adjacent = interface.adjacent
+                        port_object.auto_negotiation = interface.auto_negotiation
+                        port_object.ipv4_address = interface.ipv4_address
+                        port_object.ipv6_address = interface.ipv6_address
 
-                    parent_element.connect_port(port_object)
-                    self.logger.info("Added {0} Port".format(interface.port_name))
+                        parent_element.connect_port(port_object)
+                        self.logger.info("Added {0} Port".format(interface.port_name))
+                    else:
+                        self.logger.warning("Can't find parent element for interface {0}".format(interface.port_name))
 
         self.logger.info("Building Ports completed")

@@ -70,7 +70,7 @@ class EnableDisableSnmpV3Actions(object):
                                 enable_disable_snmp.CONFIGURE_V3).execute_command(v3_user=self.user,
                                                                                   v3_auth_pass=self.password,
                                                                                   v3_priv_pass=self.priv_key,
-                                                                                  view=self.VIEW)
+                                                                                  view=self.VIEWS)
 
     def disable_snmp(self):
         """ Disable snmp on the device """
