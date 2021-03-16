@@ -10,8 +10,8 @@ from cloudshell.cli.session.ssh_session import SSHSession
 from cloudshell.cli.session.telnet_session import TelnetSession
 
 from cloudshell.firewall.paloalto.panos.cli.panos_command_modes import (
-    DefaultCommandMode,
     ConfigCommandMode,
+    DefaultCommandMode,
 )
 
 
@@ -54,6 +54,10 @@ class PanOSCliHandler(AbstractModeConfigurator):
         cli_service = CliServiceImpl(
             session=session, requested_command_mode=self.enable_mode, logger=logger
         )
-        cli_service.send_command("set cli config-output-format set", DefaultCommandMode.PROMPT)
+        cli_service.send_command(
+            "set cli config-output-format set", DefaultCommandMode.PROMPT
+        )
         cli_service.send_command("set cli pager off", DefaultCommandMode.PROMPT)
-        cli_service.send_command("set cli terminal width 300", DefaultCommandMode.PROMPT)
+        cli_service.send_command(
+            "set cli terminal width 300", DefaultCommandMode.PROMPT
+        )

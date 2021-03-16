@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import re
+
 from cloudshell.snmp.autoload.snmp_system_info import SnmpSystemInfo
 
 
@@ -15,7 +16,9 @@ class PanOSSNMPSystemInfo(SnmpSystemInfo):
         :rtype: str
         """
         try:
-            result = self._snmp_handler.get_property("PAN-COMMON-MIB", "panSysSwVersion", "0").safe_value
+            result = self._snmp_handler.get_property(
+                "PAN-COMMON-MIB", "panSysSwVersion", "0"
+            ).safe_value
         except Exception:
             result = ""
 

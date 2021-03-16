@@ -5,9 +5,9 @@ from cloudshell.cli.service.command_mode import CommandMode
 
 
 class DefaultCommandMode(CommandMode):
-    PROMPT = r'>\s*$'
-    ENTER_COMMAND = ''
-    EXIT_COMMAND = ''
+    PROMPT = r">\s*$"
+    ENTER_COMMAND = ""
+    EXIT_COMMAND = ""
 
     def __init__(self, resource_config):
         """
@@ -19,15 +19,17 @@ class DefaultCommandMode(CommandMode):
         self.resource_config = resource_config
         # self._api = api
 
-        super(DefaultCommandMode, self).__init__(prompt=self.PROMPT,
-                                                 enter_command=self.ENTER_COMMAND,
-                                                 exit_command=self.EXIT_COMMAND)
+        super(DefaultCommandMode, self).__init__(
+            prompt=self.PROMPT,
+            enter_command=self.ENTER_COMMAND,
+            exit_command=self.EXIT_COMMAND,
+        )
 
 
 class ConfigCommandMode(CommandMode):
-    PROMPT = r'[\[\(]edit[\)\]]\s*\S*#\s*$'
-    ENTER_COMMAND = 'configure'
-    EXIT_COMMAND = 'exit'
+    PROMPT = r"[\[\(]edit[\)\]]\s*\S*#\s*$"
+    ENTER_COMMAND = "configure"
+    EXIT_COMMAND = "exit"
 
     def __init__(self, resource_config):
         """
@@ -39,13 +41,11 @@ class ConfigCommandMode(CommandMode):
         self.resource_config = resource_config
         # self._api = api
 
-        super(ConfigCommandMode, self).__init__(prompt=self.PROMPT,
-                                                enter_command=self.ENTER_COMMAND,
-                                                exit_command=self.EXIT_COMMAND)
+        super(ConfigCommandMode, self).__init__(
+            prompt=self.PROMPT,
+            enter_command=self.ENTER_COMMAND,
+            exit_command=self.EXIT_COMMAND,
+        )
 
 
-CommandMode.RELATIONS_DICT = {
-    DefaultCommandMode: {
-        ConfigCommandMode: {}
-    }
-}
+CommandMode.RELATIONS_DICT = {DefaultCommandMode: {ConfigCommandMode: {}}}

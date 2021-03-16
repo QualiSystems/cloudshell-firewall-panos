@@ -9,7 +9,9 @@ from cloudshell.snmp.snmp_parameters import (
     SNMPWriteParameters,
 )
 
-from cloudshell.firewall.paloalto.panos.flows.panos_disable_snmp_flow import PanOSDisableSnmpFlow
+from cloudshell.firewall.paloalto.panos.flows.panos_disable_snmp_flow import (
+    PanOSDisableSnmpFlow,
+)
 
 try:
     from unittest.mock import MagicMock, patch
@@ -83,7 +85,9 @@ class TestPanOSDisableSNMPFlow(TestCase):
 
         disable_flow = self._get_handler()
 
-        disable_actions_mock.return_value.disable_snmp_service = disable_snmp_service_mock
+        disable_actions_mock.return_value.disable_snmp_service = (
+            disable_snmp_service_mock
+        )
         disable_actions_mock.return_value.disable_snmp = disable_snmp_mock
         system_actions_mock.return_value.commit_changes = commit_changes_mock
 

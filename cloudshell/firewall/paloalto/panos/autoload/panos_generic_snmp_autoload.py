@@ -4,13 +4,15 @@
 import re
 
 from cloudshell.snmp.autoload.generic_snmp_autoload import (
+    GeneralAutoloadError,
     GenericSNMPAutoload,
     SnmpEntityTable,
-    GeneralAutoloadError,
-    log_autoload_details
+    log_autoload_details,
 )
 
-from cloudshell.firewall.paloalto.panos.autoload.panos_snmp_system_info import PanOSSNMPSystemInfo
+from cloudshell.firewall.paloalto.panos.autoload.panos_snmp_system_info import (
+    PanOSSNMPSystemInfo,
+)
 
 
 class PanOSGenericSNMPAutoload(GenericSNMPAutoload):
@@ -93,14 +95,15 @@ class PanOSGenericSNMPAutoload(GenericSNMPAutoload):
                 match = re.search(
                     r"ethernet(?P<ch_index>\d+)/(?P<if_index>\d+)",
                     interface.if_descr_name,
-                    re.IGNORECASE
+                    re.IGNORECASE,
                 )
                 if match:
-                    parent_element = self._chassis.get(match.groupdict().get("ch_index"))
+                    parent_element = self._chassis.get(
+                        match.groupdict().get("ch_index")
+                    )
                     if parent_element:
                         port_object = self._resource_model.entities.Port(
-                            index=if_index,
-                            name=interface.port_name.replace("/", "-")
+                            index=if_index, name=interface.port_name.replace("/", "-")
                         )
 
                         port_object.mac_address = interface.if_mac
@@ -117,6 +120,10 @@ class PanOSGenericSNMPAutoload(GenericSNMPAutoload):
                         parent_element.connect_port(port_object)
                         self.logger.info("Added {0} Port".format(interface.port_name))
                     else:
-                        self.logger.warning("Can't find parent element for interface {0}".format(interface.port_name))
+                        self.logger.warning(
+                            "Can't find parent element for interface {0}".format(
+                                interface.port_name
+                            )
+                        )
 
         self.logger.info("Building Ports completed")

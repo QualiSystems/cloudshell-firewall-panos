@@ -5,8 +5,12 @@ from cloudshell.snmp.snmp_configurator import (
     EnableDisableSnmpFlowInterface,
 )
 
-from cloudshell.firewall.paloalto.panos.flows.panos_enable_snmp_flow import PanOSEnableSnmpFlow
-from cloudshell.firewall.paloalto.panos.flows.panos_disable_snmp_flow import PanOSDisableSnmpFlow
+from cloudshell.firewall.paloalto.panos.flows.panos_disable_snmp_flow import (
+    PanOSDisableSnmpFlow,
+)
+from cloudshell.firewall.paloalto.panos.flows.panos_enable_snmp_flow import (
+    PanOSEnableSnmpFlow,
+)
 
 
 class PanOSEnableDisableSnmpFlow(EnableDisableSnmpFlowInterface):

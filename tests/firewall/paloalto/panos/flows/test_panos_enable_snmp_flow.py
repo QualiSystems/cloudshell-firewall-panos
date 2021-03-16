@@ -9,7 +9,9 @@ from cloudshell.snmp.snmp_parameters import (
     SNMPWriteParameters,
 )
 
-from cloudshell.firewall.paloalto.panos.flows.panos_enable_snmp_flow import PanOSEnableSnmpFlow
+from cloudshell.firewall.paloalto.panos.flows.panos_enable_snmp_flow import (
+    PanOSEnableSnmpFlow,
+)
 
 try:
     from unittest.mock import MagicMock, patch

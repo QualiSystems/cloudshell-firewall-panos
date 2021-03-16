@@ -8,6 +8,7 @@ from cloudshell.shell.flows.autoload.basic_flow import AbstractAutoloadFlow
 from cloudshell.firewall.paloalto.panos.autoload.panos_generic_snmp_autoload import (
     PanOSGenericSNMPAutoload,
 )
+
 # from cloudshell.firewall.paloalto.panos.autoload.cisco_port_attrs_service import (
 #     CiscoSnmpPortAttrTables,
 # )
@@ -28,8 +29,13 @@ class PanOSSnmpAutoloadFlow(AbstractAutoloadFlow):
         with self._snmp_handler.get_service() as snmp_service:
             snmp_service.add_mib_folder_path(self.MIBS_FOLDER)
             snmp_service.load_mib_tables(
-                ["PAN-COMMON-MIB", "PAN-GLOBAL-REG",
-                 "PAN-GLOBAL-TC", "PAN-PRODUCTS-MIB", "PAN-ENTITY-EXT-MIB"]
+                [
+                    "PAN-COMMON-MIB",
+                    "PAN-GLOBAL-REG",
+                    "PAN-GLOBAL-TC",
+                    "PAN-PRODUCTS-MIB",
+                    "PAN-ENTITY-EXT-MIB",
+                ]
             )
             snmp_autoload = PanOSGenericSNMPAutoload(snmp_service, self._logger)
 
