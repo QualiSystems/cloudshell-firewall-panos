@@ -19,7 +19,7 @@ class PanOSGenericSNMPAutoload(GenericSNMPAutoload):
     def __init__(self, snmp_handler, logger):
         super(PanOSGenericSNMPAutoload, self).__init__(snmp_handler, logger)
         self._if_ports_in_entity = False
-        self._chassis = dict()
+        self._chassis = {}
 
     @property
     def system_info_service(self):
@@ -86,7 +86,11 @@ class PanOSGenericSNMPAutoload(GenericSNMPAutoload):
                 self._get_ports_attributes(element, parent)
 
     def _add_ports_from_iftable(self):
-        """Get resource details and attributes for every port base on data from IFMIB Table"""
+        """Get ports data.
+
+        Get resource details and attributes for every port
+        base on data from IF-MIB Table.
+        """
         self.logger.info("Loading Ports ...")
 
         for if_index, interface in self.if_table_service.if_ports.items():

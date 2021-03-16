@@ -16,15 +16,14 @@ from cloudshell.firewall.paloalto.panos.helpers.temp_dir_context import TempDirC
 
 class SystemConfigurationActions(object):
     def __init__(self, cli_service, logger):
-        """
-        Reboot actions
+        """Reboot actions.
+
         :param cli_service: default mode cli_service
         :type cli_service: CliService
         :param logger:
         :type logger: Logger
         :return:
         """
-
         self._cli_service = cli_service
         self._logger = logger
 
@@ -32,12 +31,11 @@ class SystemConfigurationActions(object):
         """Save current configuration to local file on device filesystem.
 
         :param destination: destination file
-        :param action_map: actions will be taken during executing commands, i.e. handles yes/no prompts
-        :param error_map: errors will be raised during executing commands, i.e. handles Invalid Commands errors
+        :param action_map: actions will be taken during executing commands
+        :param error_map: errors will be raised during executing commands
         :param timeout: session timeout
         :raise Exception:
         """
-
         output = CommandTemplateExecutor(
             cli_service=self._cli_service,
             command_template=configuration.SAVE_CONFIG,
@@ -59,12 +57,11 @@ class SystemConfigurationActions(object):
         """Load saved on device filesystem configuration.
 
         :param source: source file
-        :param action_map: actions will be taken during executing commands, i.e. handles yes/no prompts
-        :param error_map: errors will be raised during executing commands, i.e. handles Invalid Commands errors
+        :param action_map: actions will be taken during executing commands
+        :param error_map: errors will be raised during executing commands
         :param timeout: session timeout
         :raise Exception:
         """
-
         output = CommandTemplateExecutor(
             cli_service=self._cli_service,
             command_template=configuration.LOAD_CONFIG,
@@ -93,15 +90,14 @@ class SystemConfigurationActions(object):
 
 class SystemActions(object):
     def __init__(self, cli_service, logger):
-        """
-        Reboot actions
+        """Reboot actions.
+
         :param cli_service: default mode cli_service
         :type cli_service: CliService
         :param logger:
         :type logger: Logger
         :return:
         """
-
         self._cli_service = cli_service
         self._logger = logger
 
@@ -116,8 +112,7 @@ class SystemActions(object):
         password=None,
         remote_path=None,
     ):
-        """ Import configuration file from remote TFTP or SCP server """
-
+        """Import configuration file from remote TFTP or SCP server."""
         if remote_path.endswith("/"):
             file_path = remote_path + filename
         else:
@@ -178,11 +173,11 @@ class SystemActions(object):
         password=None,
         remote_path=None,
     ):
-        """Export configuration file to remote TFTP or SCP server
+        """Export configuration file to remote TFTP or SCP server.
+
         config_file_name - Name of configuration file on device
         remote_file_name - Name of configuration file on remote SCP/TFTP Server
         """
-
         if protocol.upper() == "TFTP":
             output = CommandTemplateExecutor(
                 self._cli_service, configuration.COPY_TO_TFTP
@@ -233,7 +228,7 @@ class SystemActions(object):
     def _rename_file_on_tftp(
         self, initial_file_name, new_file_name, tftp_host, tftp_port
     ):
-        """  """
+        """Rename file on remote TFTP Server."""
         if tftp_port:
             tftp = tftpy.TftpClient(host=tftp_host, port=int(tftp_port))
         else:
@@ -246,39 +241,36 @@ class SystemActions(object):
             tftp.upload(
                 filename=new_file_name, input=os.path.join(temp_dir, new_file_name)
             )
-            # tftp.upload(filename="{}.xml".format(new_file_name), input=os.path.join(temp_dir, new_file_name))
 
     def reload_device(self, timeout=500, action_map=None, error_map=None):
-        """Reload device
+        """Reload device.
 
         :param timeout: session reconnect timeout
-        :param action_map: actions will be taken during executing commands, i.e. handles yes/no prompts
-        :param error_map: errors will be raised during executing commands, i.e. handles Invalid Commands errors
+        :param action_map: actions will be taken during executing commands
+        :param error_map: errors will be raised during executing commands
         """
-
         try:
             CommandTemplateExecutor(
                 self._cli_service, configuration.RELOAD
             ).execute_command(action_map=action_map, error_map=error_map)
-        except Exception as e:
+        except Exception:
             self._logger.info("Device rebooted, starting reconnect")
         self._cli_service.reconnect(timeout)
 
     def shutdown(self, action_map=None, error_map=None):
-        """ Shutdown the system """
-
+        """Shutdown the system."""
         try:
             CommandTemplateExecutor(
                 self._cli_service, configuration.SHUTDOWN
             ).execute_command(action_map=action_map, error_map=error_map)
-        except Exception as e:
+        except Exception:
             self._logger.info("Device turned off")
 
 
 class FirmwareActions(object):
     def __init__(self, cli_service, logger):
-        """
-        Reboot actions
+        """Reboot actions.
+
         :param cli_service: default mode cli_service
         :type cli_service: CliService
         :param logger:
@@ -293,7 +285,6 @@ class FirmwareActions(object):
 
         :param software_file_name: software file name
         """
-
         CommandTemplateExecutor(
             self._cli_service, firmware.INSTALL_SOFTWARE
         ).execute_command(software_file_name=software_file_name)

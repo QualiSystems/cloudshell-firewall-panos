@@ -24,6 +24,7 @@ class PanOSConfigurationFlow(AbstractConfigurationFlow):
 
     def _save_flow(self, folder_path, configuration_type, vrf_management_name=None):
         """Execute flow which save selected file to the provided destination.
+
         :param folder_path: destination path where file will be saved
         :param configuration_type: source file, which will be saved
         :param vrf_management_name: Virtual Routing and Forwarding Name
@@ -45,7 +46,6 @@ class PanOSConfigurationFlow(AbstractConfigurationFlow):
         with self._cli_handler.get_cli_service(
             self._cli_handler.enable_mode
         ) as enable_session:
-            # remote_file_name = "{}.xml".format(self._verify_config_name(connection_dict.get(UrlParser.FILENAME)))
             remote_file_name = self._verify_config_name(
                 connection_dict.get(UrlParser.FILENAME)
             )
@@ -78,6 +78,7 @@ class PanOSConfigurationFlow(AbstractConfigurationFlow):
         self, path, configuration_type, restore_method, vrf_management_name
     ):
         """Execute flow which save selected file to the provided destination.
+
         :param path: the path to the configuration file, including the configuration
             file name
         :param restore_method: the restore method to use when restoring the
@@ -105,9 +106,8 @@ class PanOSConfigurationFlow(AbstractConfigurationFlow):
         if restore_method.lower() == "append":
             raise Exception(
                 self.__class__.__name__,
-                "Device doesn't support restoring '{0}' configuration type with '{1}' method".format(
-                    configuration_type, restore_method
-                ),
+                "Device doesn't support restoring '{0}' configuration type "
+                "with '{1}' method".format(configuration_type, restore_method),
             )
 
         connection_dict = UrlParser.parse_url(path)
@@ -142,14 +142,13 @@ class PanOSConfigurationFlow(AbstractConfigurationFlow):
                 restore_actions.reload_device()
 
     def _verify_config_name(self, config_name):
-        """Verify configuration name correctness
+        """Verify configuration name correctness.
 
         Config name example {resource_name}-{confguration_type}-{timestamp}
         configuration_type - running/startup = 7ch
         timestamp - ddmmyy-HHMMSS = 13ch
         CloudShell reserves 7ch+13ch+2ch(two delimiters "-") = 22ch
         """
-
         reserved_length = 22
 
         self._logger.debug("Original configuration name: {}".format(config_name))

@@ -19,6 +19,7 @@ class PanOSEnableDisableSnmpFlow(EnableDisableSnmpFlowInterface):
 
     def __init__(self, cli_handler, logger):
         """Enable snmp flow.
+
         :param cli_handler:
         :param logger:
         :return:

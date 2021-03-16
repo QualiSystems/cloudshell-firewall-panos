@@ -19,6 +19,7 @@ class PanOSLoadFirmwareFlow(AbstractFirmwareFlow):
 
     def _load_firmware_flow(self, path, vrf_management_name, timeout):
         """Load a firmware onto the device.
+
         :param path: The path to the firmware file, including the firmware file name
         :param vrf_management_name: Virtual Routing and Forwarding Name
         :param timeout:

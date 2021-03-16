@@ -12,29 +12,25 @@ class EnableDisableSnmpV2Actions(object):
     SNMP_VERSION = "v2c"
 
     def __init__(self, cli_service, logger, community):
-        """ Enable Disable Snmp actions """
-
+        """Enable Disable Snmp actions."""
         self._cli_service = cli_service
         self._logger = logger
         self.community = community
 
     def enable_snmp_service(self):
-        """ Enable SNMP server """
-
+        """Enable SNMP server."""
         CommandTemplateExecutor(
             self._cli_service, enable_disable_snmp.ENABLE_SNMP_SERVICE
         ).execute_command()
 
     def enable_snmp(self):
-        """ Enable snmp on the device """
-
+        """Enable snmp on the device."""
         CommandTemplateExecutor(
             self._cli_service, enable_disable_snmp.CONFIGURE_V2C
         ).execute_command(community=self.community)
 
     def disable_snmp(self):
-        """ Disable snmp on the device """
-
+        """Disable snmp on the device."""
         CommandTemplateExecutor(
             self._cli_service, enable_disable_snmp.DELETE_SNMP_CONFIG
         ).execute_command(snmp_version=self.SNMP_VERSION)
@@ -47,14 +43,14 @@ class EnableDisableSnmpV3Actions(object):
     OID = 1
 
     def __init__(self, cli_service, logger, user, password, priv_key):
-        """Enable Disable Snmp actions
+        """Enable Disable Snmp actions.
+
         :param CliService cli_service: config mode cli service
         :param logger:
         :param str user: user name
         :param str password:
         :param str priv_key:
         """
-
         self._cli_service = cli_service
         self._logger = logger
         self.user = user
@@ -62,15 +58,13 @@ class EnableDisableSnmpV3Actions(object):
         self.priv_key = priv_key
 
     def enable_snmp_service(self):
-        """ Enable SNMP server """
-
+        """Enable SNMP server."""
         CommandTemplateExecutor(
             self._cli_service, enable_disable_snmp.ENABLE_SNMP_SERVICE
         ).execute_command()
 
     def enable_snmp(self):
-        """  """
-
+        """Configure SNMP."""
         CommandTemplateExecutor(
             self._cli_service, enable_disable_snmp.CONFIGURE_V3_VIEW
         ).execute_command(views=self.VIEWS, view=self.VIEW, oid=self.OID)
@@ -84,8 +78,7 @@ class EnableDisableSnmpV3Actions(object):
         )
 
     def disable_snmp(self):
-        """ Disable snmp on the device """
-
+        """Disable snmp on the device."""
         CommandTemplateExecutor(
             self._cli_service, enable_disable_snmp.DELETE_SNMP_CONFIG
         ).execute_command(snmp_version=self.SNMP_VERSION)

@@ -9,14 +9,6 @@ from cloudshell.firewall.paloalto.panos.autoload.panos_generic_snmp_autoload imp
     PanOSGenericSNMPAutoload,
 )
 
-# from cloudshell.firewall.paloalto.panos.autoload.cisco_port_attrs_service import (
-#     CiscoSnmpPortAttrTables,
-# )
-# from cloudshell.firewall.paloalto.panos.autoload.cisco_snmp_if_port import CiscoSnmpIfPort
-# from cloudshell.firewall.paloalto.panos.autoload.cisco_snmp_if_port_channel import (
-#     CiscoIfPortChannel,
-# )
-
 
 class PanOSSnmpAutoloadFlow(AbstractAutoloadFlow):
     MIBS_FOLDER = os.path.join(os.path.dirname(__file__), os.pardir, "mibs")

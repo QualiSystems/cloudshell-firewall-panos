@@ -10,14 +10,11 @@ class DefaultCommandMode(CommandMode):
     EXIT_COMMAND = ""
 
     def __init__(self, resource_config):
-        """
-        Initialize Default command mode, only for cases when session started not in enable mode
+        """Initialize Default command mode.
 
-        :param context:
+        Only for cases when session started not in enable mode.
         """
-
         self.resource_config = resource_config
-        # self._api = api
 
         super(DefaultCommandMode, self).__init__(
             prompt=self.PROMPT,
@@ -32,14 +29,11 @@ class ConfigCommandMode(CommandMode):
     EXIT_COMMAND = "exit"
 
     def __init__(self, resource_config):
-        """
-        Initialize Enable command mode - default command mode for Cisco Shells
+        """Initialize Enable command mode.
 
-        :param context:
+        Default command mode for Cisco Shells.
         """
-
         self.resource_config = resource_config
-        # self._api = api
 
         super(ConfigCommandMode, self).__init__(
             prompt=self.PROMPT,

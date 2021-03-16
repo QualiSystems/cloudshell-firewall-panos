@@ -48,9 +48,7 @@ class PanOSCliHandler(AbstractModeConfigurator):
         return self.modes[ConfigCommandMode]
 
     def _on_session_start(self, session, logger):
-        """Send default commands to configure/clear session outputs.
-        :return:
-        """
+        """Send default commands to configure/clear session outputs."""
         cli_service = CliServiceImpl(
             session=session, requested_command_mode=self.enable_mode, logger=logger
         )

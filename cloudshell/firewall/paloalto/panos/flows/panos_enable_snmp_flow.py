@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-from cloudshell.firewall.paloalto.panos.command_actions.enable_disable_snmp_actions import (
+from cloudshell.firewall.paloalto.panos.command_actions.enable_disable_snmp_actions import (  # noqa: E501
     EnableDisableSnmpV2Actions,
     EnableDisableSnmpV3Actions,
 )
@@ -11,15 +11,8 @@ from cloudshell.firewall.paloalto.panos.command_actions.system_actions import (
 
 
 class PanOSEnableSnmpFlow(object):
-    # DEFAULT_SNMP_VIEW = "quali_snmp_view"
-    # DEFAULT_SNMP_GROUP = "quali_snmp_group"
-
     def __init__(self, cli_handler, logger):
-        """Enable snmp flow.
-        :param cli_handler:
-        :param logger:
-        :return:
-        """
+        """Enable snmp flow."""
         self._logger = logger
         self._cli_handler = cli_handler
 
