@@ -61,7 +61,10 @@ class PanOSGenericSNMPAutoload(GenericSNMPAutoload):
         if not self._if_ports_in_entity:
             self._add_ports_from_iftable()
 
-        autoload_details = resource_model.build()
+        autoload_details = resource_model.build(
+            filter_empty_modules=True,
+            use_new_unique_id=True
+        )
 
         log_autoload_details(self.logger, autoload_details)
         return autoload_details
