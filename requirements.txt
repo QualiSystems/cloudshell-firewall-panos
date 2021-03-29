@@ -1,3 +1,6 @@
 tftpy
-cloudshell-firewall>=3.0,<3.1
-cloudshell-networking-devices>=2.5,<2.6
+cloudshell-shell-flows>=1.0,<2.0
+cloudshell-snmp>=4.0,<5.0
+cloudshell-snmp-autoload>=1.0,<2.0
+cloudshell-cli>=4.0,<5.0
+cloudshell-shell-standards>=1.2,<2.0

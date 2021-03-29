@@ -1,11 +1,11 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-import tempfile
 import shutil
+import tempfile
 
 
 class TempDirContext:
-    def __init__(self, remove_dir_on_error=True, prefix=''):
+    def __init__(self, remove_dir_on_error=True, prefix=""):
         self.temp_dir = None
         self.prefix = prefix
         self._remove_dir_on_error = remove_dir_on_error
