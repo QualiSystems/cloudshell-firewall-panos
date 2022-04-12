@@ -11,7 +11,12 @@ from cloudshell.firewall.paloalto.panos.command_actions.system_actions import (
 
 
 class PanOSConfigurationFlow(AbstractConfigurationFlow):
-    CONF_FILE_NAME_LENGTH = 32
+    CONF_FILE_NAME_LENGTH = 32  # max supported file length by devices
+    # Config name example {resource_name}-{configuration_type}-{timestamp}
+    #   configuration_type - running/startup = 7ch
+    #   timestamp - ddmmyy-HHMMSS = 13ch
+    #   CloudShell reserves 7ch+13ch+2ch(two delimiters "-") = 22ch
+    MAX_RESOURCE_NAME_LENGTH = CONF_FILE_NAME_LENGTH - 22
     FILE_TYPE = "configuration"
 
     def __init__(self, cli_handler, resource_config, logger):
@@ -42,13 +47,11 @@ class PanOSConfigurationFlow(AbstractConfigurationFlow):
             )
 
         connection_dict = UrlParser.parse_url(folder_path)
+        remote_file_name = connection_dict.get(UrlParser.FILENAME)
 
         with self._cli_handler.get_cli_service(
             self._cli_handler.enable_mode
         ) as enable_session:
-            remote_file_name = self._verify_config_name(
-                connection_dict.get(UrlParser.FILENAME)
-            )
             if configuration_type == "running-config":
                 config_file_name = remote_file_name
                 with enable_session.enter_mode(
@@ -140,24 +143,3 @@ class PanOSConfigurationFlow(AbstractConfigurationFlow):
 
             if configuration_type == "running-config":
                 restore_actions.reload_device()
-
-    def _verify_config_name(self, config_name):
-        """Verify configuration name correctness.
-
-        Config name example {resource_name}-{confguration_type}-{timestamp}
-        configuration_type - running/startup = 7ch
-        timestamp - ddmmyy-HHMMSS = 13ch
-        CloudShell reserves 7ch+13ch+2ch(two delimiters "-") = 22ch
-        """
-        reserved_length = 22
-
-        self._logger.debug("Original configuration name: {}".format(config_name))
-        if reserved_length < self.CONF_FILE_NAME_LENGTH < len(config_name):
-            splitted = config_name.split("-")
-            resource_name = "-".join(splitted[:-3])[
-                : self.CONF_FILE_NAME_LENGTH - reserved_length
-            ]
-            config_name = "-".join([resource_name] + splitted[-3:])
-        self._logger.debug("Verified configuration name: {}".format(config_name))
-
-        return config_name
