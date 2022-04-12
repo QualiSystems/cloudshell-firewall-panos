@@ -19,6 +19,7 @@ setup(
     packages=find_packages(),
     install_requires=required,
     tests_require=required_for_tests,
+    python_requires="~=3.7",
     version=version_from_file,
     description="QualiSystems firewall Palo Alto PanOS specific Package",
     include_package_data=True,
