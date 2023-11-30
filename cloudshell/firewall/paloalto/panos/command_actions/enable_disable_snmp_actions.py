@@ -1,7 +1,8 @@
 from __future__ import annotations
 
-from attrs import define
 from typing import TYPE_CHECKING
+
+from attrs import define
 
 from cloudshell.cli.command_template.command_template_executor import (
     CommandTemplateExecutor,
@@ -48,11 +49,11 @@ class EnableDisableSnmpV3Actions:
         ).execute_command()
 
     def enable_snmp(
-            self,
-            snmp_params: SNMPV3Parameters,
-            views: str = "quali_views",
-            view: str = "quali_view",
-            oid: int = 1,
+        self,
+        snmp_params: SNMPV3Parameters,
+        views: str = "quali_views",
+        view: str = "quali_view",
+        oid: int = 1,
     ):
         """Configure SNMP."""
         CommandTemplateExecutor(
