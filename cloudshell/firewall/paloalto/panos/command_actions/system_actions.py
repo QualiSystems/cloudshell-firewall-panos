@@ -1,6 +1,7 @@
-#!/usr/bin/python
-# -*- coding: utf-8 -*-
+from __future__ import annotations
 
+from attrs import define
+import logging
 import os
 import re
 
@@ -10,22 +11,17 @@ from cloudshell.cli.command_template.command_template_executor import (
     CommandTemplateExecutor,
 )
 
+from cloudshell.cli.service.cli_service import CliService
+
 from cloudshell.firewall.paloalto.panos.command_templates import configuration, firmware
 from cloudshell.firewall.paloalto.panos.helpers.temp_dir_context import TempDirContext
 
+logger = logging.getLogger(__name__)
 
-class SystemConfigurationActions(object):
-    def __init__(self, cli_service, logger):
-        """Reboot actions.
 
-        :param cli_service: default mode cli_service
-        :type cli_service: CliService
-        :param logger:
-        :type logger: Logger
-        :return:
-        """
-        self._cli_service = cli_service
-        self._logger = logger
+@define
+class SystemConfigurationActions:
+    _cli_service: CliService
 
     def save_config(self, destination, action_map=None, error_map=None, timeout=None):
         """Save current configuration to local file on device filesystem.
@@ -48,7 +44,7 @@ class SystemConfigurationActions(object):
         status_match = re.search(pattern, output, re.IGNORECASE)
 
         if not status_match:
-            self._logger.error("Save configuration failed: {err}".format(err=output))
+            logger.error(f"Save configuration failed: {output}")
             raise Exception(
                 "Save configuration", "Save configuration failed. See logs for details"
             )
@@ -74,7 +70,7 @@ class SystemConfigurationActions(object):
         status_match = re.search(pattern, output, re.IGNORECASE)
 
         if not status_match:
-            self._logger.error("Load configuration failed: {err}".format(err=output))
+            logger.error(f"Load configuration failed: {output}")
             raise Exception(
                 "Load configuration", "Load configuration failed. See logs for details"
             )
@@ -88,18 +84,9 @@ class SystemConfigurationActions(object):
         ).execute_command()
 
 
-class SystemActions(object):
-    def __init__(self, cli_service, logger):
-        """Reboot actions.
-
-        :param cli_service: default mode cli_service
-        :type cli_service: CliService
-        :param logger:
-        :type logger: Logger
-        :return:
-        """
-        self._cli_service = cli_service
-        self._logger = logger
+@define
+class SystemActions:
+    _cli_service: CliService
 
     def import_config(
         self,
@@ -113,22 +100,15 @@ class SystemActions(object):
         remote_path=None,
     ):
         """Import configuration file from remote TFTP or SCP server."""
-        if remote_path.endswith("/"):
-            file_path = remote_path + filename
-        else:
-            file_path = remote_path + "/" + filename
-
         if protocol.upper() == "TFTP":
             output = CommandTemplateExecutor(
                 self._cli_service, configuration.COPY_FROM_TFTP
             ).execute_command(
-                remote_path=file_path, file_type=file_type, tftp_host=host, port=port
+                remote_path=remote_path, file_type=file_type, tftp_host=host, port=port
             )
             pattern = r"Received \d+ bytes in -?\d+.\d+ seconds"
         elif protocol.upper() == "SCP":
-            src = "{username}@{host}:{path}".format(
-                username=user, host=host, path=file_path
-            )
+            src = f"{user}@{host}:{remote_path}"
 
             action_map = {
                 "[Pp]assword:": lambda session, logger: session.send_line(
@@ -138,28 +118,24 @@ class SystemActions(object):
             }
 
             output = CommandTemplateExecutor(
-                self._cli_service, configuration.COPY_FROM_SCP, action_map=action_map
+                self._cli_service,
+                configuration.COPY_FROM_SCP,
+                action_map=action_map
             ).execute_command(src=src, file_type=file_type, port=port)
             pattern = r"{} saved".format(filename)
         else:
             raise Exception(
-                "Import {}".format(file_type),
-                "Protocol type <{}> is unsupportable".format(protocol),
+                f"Import {file_type}",
+                f"Protocol type <{protocol}> is unsupportable",
             )
 
         status_match = re.search(pattern, output, re.IGNORECASE)
 
         if not status_match:
-            self._logger.error(
-                "Import {file_type} failed: {err}".format(
-                    file_type=file_type, err=output
-                )
-            )
+            logger.error(f"Import {file_type} failed: {output}")
             raise Exception(
-                "Import {file_type}".format(file_type=file_type),
-                "Import {file_type} failed. See logs for details".format(
-                    file_type=file_type
-                ),
+                f"Import {file_type}",
+                f"Import {file_type} failed. See logs for details"
             )
 
     def export_config(
@@ -182,22 +158,16 @@ class SystemActions(object):
             output = CommandTemplateExecutor(
                 self._cli_service, configuration.COPY_TO_TFTP
             ).execute_command(filename=config_file_name, tftp_host=host, port=port)
-            self._rename_file_on_tftp(
-                initial_file_name=config_file_name,
-                new_file_name=remote_file_name,
-                tftp_host=host,
-                tftp_port=port,
-            )
+            if config_file_name != remote_file_name:
+                self._rename_file_on_tftp(
+                    initial_file_name=config_file_name,
+                    new_file_name=remote_file_name,
+                    tftp_host=host,
+                    tftp_port=port,
+                )
             pattern = r"Sent \d+ bytes in -?\d+.\d+ seconds"
         elif protocol.upper() == "SCP":
-            if remote_path.endswith("/"):
-                file_path = remote_path + remote_file_name
-            else:
-                file_path = remote_path + "/" + remote_file_name
-
-            dst = "{username}@{host}:{path}".format(
-                username=user, host=host, path=file_path
-            )
+            dst = f"{user}@{host}:{remote_path}"
 
             action_map = {
                 "[Pp]assword:": lambda session, logger: session.send_line(
@@ -207,19 +177,21 @@ class SystemActions(object):
             }
 
             output = CommandTemplateExecutor(
-                self._cli_service, configuration.COPY_TO_SCP, action_map=action_map
+                self._cli_service,
+                configuration.COPY_TO_SCP,
+                action_map=action_map
             ).execute_command(filename=config_file_name, dst=dst, port=port)
             pattern = r"{}\s+100%".format(config_file_name)
         else:
             raise Exception(
                 "Export configuration",
-                "Protocol type <{}> is unsupportable".format(protocol),
+                f"Protocol type <{protocol}> is unsupportable",
             )
 
         status_match = re.search(pattern, output, re.IGNORECASE)
 
         if not status_match:
-            self._logger.error("Export configuration failed: {err}".format(err=output))
+            logger.error(f"Export configuration failed: {output}")
             raise Exception(
                 "Export configuration",
                 "Export configuration failed. See logs for details",
@@ -254,7 +226,7 @@ class SystemActions(object):
                 self._cli_service, configuration.RELOAD
             ).execute_command(action_map=action_map, error_map=error_map)
         except Exception:
-            self._logger.info("Device rebooted, starting reconnect")
+            logger.info("Device rebooted, starting reconnect")
         self._cli_service.reconnect(timeout)
 
     def shutdown(self, action_map=None, error_map=None):
@@ -264,21 +236,12 @@ class SystemActions(object):
                 self._cli_service, configuration.SHUTDOWN
             ).execute_command(action_map=action_map, error_map=error_map)
         except Exception:
-            self._logger.info("Device turned off")
+            logger.info("Device turned off")
 
 
-class FirmwareActions(object):
-    def __init__(self, cli_service, logger):
-        """Reboot actions.
-
-        :param cli_service: default mode cli_service
-        :type cli_service: CliService
-        :param logger:
-        :type logger: Logger
-        :return:
-        """
-        self._cli_service = cli_service
-        self._logger = logger
+@define
+class FirmwareActions:
+    _cli_service: CliService
 
     def install_software(self, software_file_name):
         """Set boot firmware file.

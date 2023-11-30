@@ -1,5 +1,4 @@
-#!/usr/bin/python
-# -*- coding: utf-8 -*-
+from __future__ import annotations
 
 from cloudshell.cli.command_template.command_template import CommandTemplate
 
@@ -21,11 +20,16 @@ CONFIGURE_V3_VIEW = CommandTemplate(
 )
 CONFIGURE_V3 = CommandTemplate(
     "set deviceconfig system snmp-setting access-setting version v3 "
-    "users {v3_user} authpwd {v3_auth_pass} privpwd {v3_priv_pass} view {view}"
+    "users {v3_user} authpwd {v3_auth_pass} privpwd {v3_priv_pass} view {views}"
 )
 
+# DELETE_SNMP_COMMUNITY = CommandTemplate(
+#     "delete deviceconfig system snmp-setting access-setting "
+#     "version v2c snmp-community-string"
+# )
+
 DELETE_SNMP_CONFIG = CommandTemplate(
-    "delete deviceconfig system snmp-setting access-setting version {snmp_version}"
+    "delete deviceconfig system snmp-setting access-setting"
 )
 DELETE_V3_VIEW = CommandTemplate(
     "delete deviceconfig system snmp-setting access-setting "

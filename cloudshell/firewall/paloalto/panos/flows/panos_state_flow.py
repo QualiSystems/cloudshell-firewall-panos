@@ -1,5 +1,4 @@
-#!/usr/bin/python
-# -*- coding: utf-8 -*-
+from __future__ import annotations
 
 from cloudshell.shell.flows.state.basic_flow import StateFlow
 

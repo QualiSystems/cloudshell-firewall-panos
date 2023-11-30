@@ -1,47 +1,66 @@
-#!/usr/bin/python
-# -*- coding: utf-8 -*-
+from __future__ import annotations
+
+import logging
+from typing import TYPE_CHECKING
 
 from cloudshell.shell.flows.firmware.basic_flow import AbstractFirmwareFlow
-from cloudshell.shell.flows.utils.networking_utils import UrlParser
 
 from cloudshell.firewall.paloalto.panos.command_actions.system_actions import (
     FirmwareActions,
     SystemActions,
 )
 
+if TYPE_CHECKING:
+    from typing import Union
+
+    from cloudshell.shell.flows.utils.url import BasicLocalUrl, RemoteURL
+    from cloudshell.shell.standards.firewall.resource_config import (
+        FirewallResourceConfig,
+    )
+    from ..cli.panos_cli_configurator import PanOSCliConfigurator
+
+    Url = Union[RemoteURL, BasicLocalUrl]
+
+
+logger = logging.getLogger(__name__)
+
 
 class PanOSLoadFirmwareFlow(AbstractFirmwareFlow):
     FILE_TYPE = "software"
 
-    def __init__(self, cli_handler, logger):
-        super(PanOSLoadFirmwareFlow, self).__init__(logger)
-        self._cli_handler = cli_handler
+    def __init__(
+        self,
+        resource_config: FirewallResourceConfig,
+        cli_configurator: PanOSCliConfigurator,
+    ):
+        super().__init__(resource_config)
+        self.cli_configurator = cli_configurator
 
-    def _load_firmware_flow(self, path, vrf_management_name, timeout):
-        """Load a firmware onto the device.
+    def _load_firmware_flow(
+        self,
+        firmware_url: Url,
+        vrf_management_name: str | None,
+        timeout: int,
+    ) -> None:
+        """Load firmware.
 
-        :param path: The path to the firmware file, including the firmware file name
-        :param vrf_management_name: Virtual Routing and Forwarding Name
-        :param timeout:
-        :return:
+        Update firmware version on device by loading provided
+        :param path: full path to firmware file on ftp/tftp location
+        :param vrf_management_name: VRF Name
         """
-        connection_dict = UrlParser.parse_url(path)
-
-        with self._cli_handler.get_cli_service(
-            self._cli_handler.enable_mode
-        ) as enable_session:
-            config_file_name = connection_dict.get(UrlParser.FILENAME)
-            system_actions = SystemActions(enable_session, self._logger)
-            load_firmware_action = FirmwareActions(enable_session, self._logger)
+        logger.info("Upgrading firmware")
+        with self.cli_configurator.enable_mode_service() as cli_service:
+            system_actions = SystemActions(cli_service)
+            load_firmware_action = FirmwareActions(cli_service)
             system_actions.import_config(
-                filename=config_file_name,
-                protocol=connection_dict.get(UrlParser.SCHEME),
-                host=connection_dict.get(UrlParser.HOSTNAME),
+                filename=firmware_url.filename,
+                protocol=firmware_url.scheme,
+                host=firmware_url.host,
                 file_type=self.FILE_TYPE,
-                port=connection_dict.get(UrlParser.PORT),
-                user=connection_dict.get(UrlParser.USERNAME),
-                password=connection_dict.get(UrlParser.PASSWORD),
-                remote_path=connection_dict.get(UrlParser.PATH),
+                port=firmware_url.port,
+                user=firmware_url.username,
+                password=firmware_url.password,
+                remote_path=firmware_url.path,
             )
 
-            load_firmware_action.install_software(config_file_name)
+            load_firmware_action.install_software(firmware_url.filename)
