@@ -1,145 +1,144 @@
-#!/usr/bin/python
-# -*- coding: utf-8 -*-
+from __future__ import annotations
 
-from cloudshell.shell.flows.configuration.basic_flow import AbstractConfigurationFlow
-from cloudshell.shell.flows.utils.networking_utils import UrlParser
+import logging
+from typing import TYPE_CHECKING
+
+from cloudshell.shell.flows.configuration.basic_flow import (
+    AbstractConfigurationFlow,
+    ConfigurationType,
+    RestoreMethod,
+)
 
 from cloudshell.firewall.paloalto.panos.command_actions.system_actions import (
     SystemActions,
     SystemConfigurationActions,
 )
 
+if TYPE_CHECKING:
+    from typing import Union, ClassVar
+
+    from cloudshell.shell.flows.utils.url import BasicLocalUrl, RemoteURL
+    from cloudshell.shell.standards.firewall.resource_config import (
+        FirewallResourceConfig,
+    )
+    from ..cli.panos_cli_configurator import PanOSCliConfigurator
+
+    Url = Union[RemoteURL, BasicLocalUrl]
+
+
+logger = logging.getLogger(__name__)
+
 
 class PanOSConfigurationFlow(AbstractConfigurationFlow):
-    CONF_FILE_NAME_LENGTH = 32  # max supported file length by devices
+    MAX_CONFIG_FILE_NAME_LENGTH: ClassVar[int] = 28  # max file length supported by devices
     # Config name example {resource_name}-{configuration_type}-{timestamp}
     #   configuration_type - running/startup = 7ch
     #   timestamp - ddmmyy-HHMMSS = 13ch
-    #   CloudShell reserves 7ch+13ch+2ch(two delimiters "-") = 22ch
-    MAX_RESOURCE_NAME_LENGTH = CONF_FILE_NAME_LENGTH - 22
-    FILE_TYPE = "configuration"
+    #   file extension - .xml = 4ch
+    #   CloudShell reserves 7ch+13ch+4ch+3ch(three delimiters "-") = 27ch
+    FILE_TYPE: ClassVar[str] = "configuration"
+    FILE_EXTENSION: ClassVar[str] = "xml"
 
-    def __init__(self, cli_handler, resource_config, logger):
-        super(PanOSConfigurationFlow, self).__init__(logger, resource_config)
-        self._cli_handler = cli_handler
+    def __init__(
+        self,
+        resource_config: FirewallResourceConfig,
+        cli_configurator: PanOSCliConfigurator,
+    ):
+        super().__init__(resource_config)
+        self.cli_configurator = cli_configurator
 
     @property
-    def _file_system(self):
+    def file_system(self) -> str:
         return ""
 
-    def _save_flow(self, folder_path, configuration_type, vrf_management_name=None):
-        """Execute flow which save selected file to the provided destination.
+    def _save_flow(
+            self,
+            file_dst_url: Url,
+            configuration_type: ConfigurationType,
+            vrf_management_name: str | None,
+    ) -> str:
+        """Backup config.
 
-        :param folder_path: destination path where file will be saved
-        :param configuration_type: source file, which will be saved
-        :param vrf_management_name: Virtual Routing and Forwarding Name
-        :return: saved configuration file name
+        Backup 'startup-config' or 'running-config' from
+        device to provided file_system [ftp|tftp].
+        Also possible to backup config to localhost
+        :param file_dst_url: destination url, remote or local, where file will be saved
+        :param configuration_type: type of configuration
+        that will be saved (StartUp or Running)
+        :param vrf_management_name: Virtual Routing and
+        Forwarding management name
         """
-        if not configuration_type.endswith("-config"):
-            configuration_type += "-config"
 
-        if configuration_type not in ["running-config", "startup-config"]:
-            raise Exception(
-                self.__class__.__name__,
-                "Device doesn't support saving '{}' configuration type".format(
-                    configuration_type
-                ),
-            )
+        if configuration_type == ConfigurationType.RUNNING:
+            config_file_name = f"{file_dst_url.filename}.{self.FILE_EXTENSION}"
+            with self.cli_configurator.config_mode_service() as config_cli_service:
+                save_conf_action = SystemConfigurationActions(config_cli_service)
+                save_conf_action.save_config(config_file_name)
+        else:
+            # Filename for startup configuration is running-config.xml
+            config_file_name = "running-config.xml"
 
-        connection_dict = UrlParser.parse_url(folder_path)
-        remote_file_name = connection_dict.get(UrlParser.FILENAME)
-
-        with self._cli_handler.get_cli_service(
-            self._cli_handler.enable_mode
-        ) as enable_session:
-            if configuration_type == "running-config":
-                config_file_name = remote_file_name
-                with enable_session.enter_mode(
-                    self._cli_handler.config_mode
-                ) as config_session:
-                    save_conf_action = SystemConfigurationActions(
-                        config_session, self._logger
-                    )
-                    save_conf_action.save_config(config_file_name)
-            else:
-                # Filename for startup configuration is running-config.xml
-                config_file_name = "running-config.xml"
-
-            save_actions = SystemActions(enable_session, self._logger)
+        with self.cli_configurator.enable_mode_service() as enable_cli_service:
+            save_actions = SystemActions(enable_cli_service)
             save_actions.export_config(
                 config_file_name=config_file_name,
-                remote_file_name=remote_file_name,
-                protocol=connection_dict.get(UrlParser.SCHEME),
-                host=connection_dict.get(UrlParser.HOSTNAME),
-                port=connection_dict.get(UrlParser.PORT),
-                user=connection_dict.get(UrlParser.USERNAME),
-                password=connection_dict.get(UrlParser.PASSWORD),
-                remote_path=connection_dict.get(UrlParser.PATH),
+                remote_file_name=f"{file_dst_url.filename}.{self.FILE_EXTENSION}",
+                protocol=file_dst_url.scheme,
+                host=file_dst_url.host,
+                port=file_dst_url.port,
+                user=file_dst_url.username,
+                password=file_dst_url.password,
+                remote_path=file_dst_url.path,
             )
+        return f"{file_dst_url.filename}.{self.FILE_EXTENSION}"
 
     def _restore_flow(
-        self, path, configuration_type, restore_method, vrf_management_name
-    ):
-        """Execute flow which save selected file to the provided destination.
+        self,
+        config_path: Url,
+        configuration_type: ConfigurationType,
+        restore_method: RestoreMethod,
+        vrf_management_name: str | None,
+    ) -> None:
+        """Restore configuration on device from provided configuration file.
 
-        :param path: the path to the configuration file, including the configuration
-            file name
-        :param restore_method: the restore method to use when restoring the
-            configuration file. Possible Values are append and override
-        :param configuration_type: the configuration type to restore.
-            Possible values are startup and running
-        :param vrf_management_name: Virtual Routing and Forwarding Name
+        Restore configuration from local file system or ftp/tftp
+        server into 'running-config' or 'startup-config'.
+        :param config_path: relative path to the file on the
+        remote host tftp://server/sourcefile
+        :param configuration_type: the configuration
+        type to restore (StartUp or Running)
+        :param restore_method: override current config or not
+        :param vrf_management_name: Virtual Routing and
+        Forwarding management name
         """
         if not restore_method:
-            restore_method = "override"
+            restore_method = RestoreMethod.OVERRIDE
 
-        if not configuration_type:
-            configuration_type = "running-config"
-        elif not configuration_type.endswith("-config"):
-            configuration_type += "-config"
-
-        if configuration_type not in ["running-config", "startup-config"]:
+        if restore_method == RestoreMethod.APPEND:
             raise Exception(
-                self.__class__.__name__,
-                "Device doesn't support restoring '{}' configuration type".format(
-                    configuration_type
-                ),
+                f"Device doesn't support restoring with parameters: "
+                f"configuration type '{configuration_type}', method '{restore_method}'"
             )
 
-        if restore_method.lower() == "append":
-            raise Exception(
-                self.__class__.__name__,
-                "Device doesn't support restoring '{0}' configuration type "
-                "with '{1}' method".format(configuration_type, restore_method),
-            )
-
-        connection_dict = UrlParser.parse_url(path)
-
-        with self._cli_handler.get_cli_service(
-            self._cli_handler.enable_mode
-        ) as enable_session:
-
-            config_file_name = connection_dict.get(UrlParser.FILENAME)
-            restore_actions = SystemActions(enable_session, self._logger)
+        with self.cli_configurator.enable_mode_service() as enable_cli_service:
+            restore_actions = SystemActions(enable_cli_service)
             restore_actions.import_config(
-                filename=config_file_name,
-                protocol=connection_dict.get(UrlParser.SCHEME),
-                host=connection_dict.get(UrlParser.HOSTNAME),
+                filename=config_path.filename,
+                protocol=config_path.scheme,
+                host=config_path.host,
                 file_type=self.FILE_TYPE,
-                port=connection_dict.get(UrlParser.PORT),
-                user=connection_dict.get(UrlParser.USERNAME),
-                password=connection_dict.get(UrlParser.PASSWORD),
-                remote_path=connection_dict.get(UrlParser.PATH),
+                port=config_path.port,
+                user=config_path.username,
+                password=config_path.password,
+                remote_path=config_path.path,
             )
 
-            with enable_session.enter_mode(
-                self._cli_handler.config_mode
-            ) as config_session:
-                restore_conf_action = SystemConfigurationActions(
-                    config_session, self._logger
-                )
-                restore_conf_action.load_config(config_file_name)
+            with enable_cli_service.enter_mode(
+                    self.cli_configurator.config_mode
+            ) as config_cli_service:
+                restore_conf_action = SystemConfigurationActions(config_cli_service)
+                restore_conf_action.load_config(config_path.filename)
                 restore_conf_action.commit_changes()
 
-            if configuration_type == "running-config":
+            if configuration_type == ConfigurationType.RUNNING:
                 restore_actions.reload_device()

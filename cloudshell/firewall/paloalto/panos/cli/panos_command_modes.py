@@ -1,44 +1,43 @@
-#!/usr/bin/python
-# -*- coding: utf-8 -*-
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 from cloudshell.cli.service.command_mode import CommandMode
 
+if TYPE_CHECKING:
+    from cloudshell.cli.service.auth_model import Auth
+
 
 class DefaultCommandMode(CommandMode):
-    PROMPT = r">\s*$"
-    ENTER_COMMAND = ""
-    EXIT_COMMAND = ""
+    PROMPT: str = r">\s*$"
+    ENTER_COMMAND: str = ""
+    EXIT_COMMAND: str = ""
 
-    def __init__(self, resource_config):
-        """Initialize Default command mode.
-
-        Only for cases when session started not in enable mode.
-        """
-        self.resource_config = resource_config
-
-        super(DefaultCommandMode, self).__init__(
-            prompt=self.PROMPT,
-            enter_command=self.ENTER_COMMAND,
-            exit_command=self.EXIT_COMMAND,
+    def __init__(self, auth: Auth):
+        """Initialize Default command mode."""
+        self._auth = auth
+        CommandMode.__init__(
+            self,
+            DefaultCommandMode.PROMPT,
+            DefaultCommandMode.ENTER_COMMAND,
+            DefaultCommandMode.EXIT_COMMAND
         )
 
 
 class ConfigCommandMode(CommandMode):
-    PROMPT = r"[\[\(]edit[\)\]]\s*\S*#\s*$"
-    ENTER_COMMAND = "configure"
-    EXIT_COMMAND = "exit"
+    PROMPT: str = r"[\[\(]edit[\)\]]\s*\S*#\s*$"
+    ENTER_COMMAND: str = "configure"
+    EXIT_COMMAND: str = "exit"
 
-    def __init__(self, resource_config):
-        """Initialize Enable command mode.
+    def __init__(self, auth: Auth):
+        """Initialize Configuration command mode."""
+        self._auth = auth
 
-        Default command mode for Cisco Shells.
-        """
-        self.resource_config = resource_config
-
-        super(ConfigCommandMode, self).__init__(
-            prompt=self.PROMPT,
-            enter_command=self.ENTER_COMMAND,
-            exit_command=self.EXIT_COMMAND,
+        CommandMode.__init__(
+            self,
+            ConfigCommandMode.PROMPT,
+            ConfigCommandMode.ENTER_COMMAND,
+            ConfigCommandMode.EXIT_COMMAND
         )
 
 
