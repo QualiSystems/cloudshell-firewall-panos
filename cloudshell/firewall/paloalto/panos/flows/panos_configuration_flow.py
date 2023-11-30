@@ -15,12 +15,13 @@ from cloudshell.firewall.paloalto.panos.command_actions.system_actions import (
 )
 
 if TYPE_CHECKING:
-    from typing import Union, ClassVar
+    from typing import ClassVar, Union
 
     from cloudshell.shell.flows.utils.url import BasicLocalUrl, RemoteURL
     from cloudshell.shell.standards.firewall.resource_config import (
         FirewallResourceConfig,
     )
+
     from ..cli.panos_cli_configurator import PanOSCliConfigurator
 
     Url = Union[RemoteURL, BasicLocalUrl]
@@ -30,7 +31,9 @@ logger = logging.getLogger(__name__)
 
 
 class PanOSConfigurationFlow(AbstractConfigurationFlow):
-    MAX_CONFIG_FILE_NAME_LENGTH: ClassVar[int] = 28  # max file length supported by devices
+    MAX_CONFIG_FILE_NAME_LENGTH: ClassVar[
+        int
+    ] = 28  # max file length supported by devices
     # Config name example {resource_name}-{configuration_type}-{timestamp}
     #   configuration_type - running/startup = 7ch
     #   timestamp - ddmmyy-HHMMSS = 13ch
@@ -52,10 +55,10 @@ class PanOSConfigurationFlow(AbstractConfigurationFlow):
         return ""
 
     def _save_flow(
-            self,
-            file_dst_url: Url,
-            configuration_type: ConfigurationType,
-            vrf_management_name: str | None,
+        self,
+        file_dst_url: Url,
+        configuration_type: ConfigurationType,
+        vrf_management_name: str | None,
     ) -> str:
         """Backup config.
 
@@ -68,7 +71,6 @@ class PanOSConfigurationFlow(AbstractConfigurationFlow):
         :param vrf_management_name: Virtual Routing and
         Forwarding management name
         """
-
         if configuration_type == ConfigurationType.RUNNING:
             config_file_name = f"{file_dst_url.filename}.{self.FILE_EXTENSION}"
             with self.cli_configurator.config_mode_service() as config_cli_service:
@@ -134,7 +136,7 @@ class PanOSConfigurationFlow(AbstractConfigurationFlow):
             )
 
             with enable_cli_service.enter_mode(
-                    self.cli_configurator.config_mode
+                self.cli_configurator.config_mode
             ) as config_cli_service:
                 restore_conf_action = SystemConfigurationActions(config_cli_service)
                 restore_conf_action.load_config(config_path.filename)

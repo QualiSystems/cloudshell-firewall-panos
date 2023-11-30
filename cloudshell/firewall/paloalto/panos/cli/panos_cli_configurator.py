@@ -8,7 +8,6 @@ from attrs import define, field
 from typing_extensions import Self
 
 from cloudshell.cli.configurator import AbstractModeConfigurator
-
 from cloudshell.cli.factory.session_factory import (
     CloudInfoAccessKeySessionFactory,
     GenericSessionFactory,
@@ -16,13 +15,13 @@ from cloudshell.cli.factory.session_factory import (
 )
 from cloudshell.cli.service.cli_service_impl import CliServiceImpl
 from cloudshell.cli.service.command_mode_helper import CommandModeHelper
+from cloudshell.cli.session.ssh_session import SSHSession
+from cloudshell.cli.session.telnet_session import TelnetSession
 
 from cloudshell.firewall.paloalto.panos.cli.panos_command_modes import (
     ConfigCommandMode,
     DefaultCommandMode,
 )
-from cloudshell.cli.session.ssh_session import SSHSession
-from cloudshell.cli.session.telnet_session import TelnetSession
 
 if TYPE_CHECKING:
     from cloudshell.cli.service.cli import CLI

@@ -17,6 +17,7 @@ if TYPE_CHECKING:
     from cloudshell.shell.standards.firewall.resource_config import (
         FirewallResourceConfig,
     )
+
     from ..cli.panos_cli_configurator import PanOSCliConfigurator
 
     Url = Union[RemoteURL, BasicLocalUrl]

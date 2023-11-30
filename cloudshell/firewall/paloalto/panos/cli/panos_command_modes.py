@@ -20,7 +20,7 @@ class DefaultCommandMode(CommandMode):
             self,
             DefaultCommandMode.PROMPT,
             DefaultCommandMode.ENTER_COMMAND,
-            DefaultCommandMode.EXIT_COMMAND
+            DefaultCommandMode.EXIT_COMMAND,
         )
 
 
@@ -37,7 +37,7 @@ class ConfigCommandMode(CommandMode):
             self,
             ConfigCommandMode.PROMPT,
             ConfigCommandMode.ENTER_COMMAND,
-            ConfigCommandMode.EXIT_COMMAND
+            ConfigCommandMode.EXIT_COMMAND,
         )
 
 

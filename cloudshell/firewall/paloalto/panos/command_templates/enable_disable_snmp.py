@@ -23,11 +23,6 @@ CONFIGURE_V3 = CommandTemplate(
     "users {v3_user} authpwd {v3_auth_pass} privpwd {v3_priv_pass} view {views}"
 )
 
-# DELETE_SNMP_COMMUNITY = CommandTemplate(
-#     "delete deviceconfig system snmp-setting access-setting "
-#     "version v2c snmp-community-string"
-# )
-
 DELETE_SNMP_CONFIG = CommandTemplate(
     "delete deviceconfig system snmp-setting access-setting"
 )

@@ -1,5 +1,4 @@
 #!/usr/bin/python
-# -*- coding: utf-8 -*-
 
 from unittest import TestCase
 
@@ -16,7 +15,7 @@ from cloudshell.firewall.paloalto.panos.flows.panos_enable_snmp_flow import (
 try:
     from unittest.mock import MagicMock, patch
 except ImportError:
-    from mock import MagicMock, patch
+    from unittest.mock import MagicMock, patch
 
 
 class TestPanOSEnableSNMPFlow(TestCase):
@@ -111,7 +110,7 @@ class TestPanOSEnableSNMPFlow(TestCase):
             snmp_private_key=self.SNMP_PRIVATE_KEY,
         )
 
-        with self.assertRaisesRegexp(Exception, "SNMPv3 user is not defined"):
+        with self.assertRaisesRegex(Exception, "SNMPv3 user is not defined"):
             enable_flow.enable_flow(snmp_v3_parameters)
 
     def test_validate_snmp_v3_params_validates_password_and_raise(self):
@@ -124,7 +123,7 @@ class TestPanOSEnableSNMPFlow(TestCase):
             auth_protocol=SNMPV3Parameters.AUTH_MD5,
         )
 
-        with self.assertRaisesRegexp(Exception, "SNMPv3 Password has to be specified"):
+        with self.assertRaisesRegex(Exception, "SNMPv3 Password has to be specified"):
             enable_flow.enable_flow(snmp_v3_parameters)
 
     def test_validate_snmp_v3_params_validates_private_key_and_raise(self):
@@ -138,7 +137,7 @@ class TestPanOSEnableSNMPFlow(TestCase):
             private_key_protocol=SNMPV3Parameters.PRIV_DES,
         )
 
-        with self.assertRaisesRegexp(
+        with self.assertRaisesRegex(
             Exception, "SNMPv3 Private key has to be specified"
         ):
             enable_flow.enable_flow(snmp_v3_parameters)

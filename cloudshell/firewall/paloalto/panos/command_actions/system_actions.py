@@ -1,16 +1,15 @@
 from __future__ import annotations
 
-from attrs import define
 import logging
 import os
 import re
 
 import tftpy
+from attrs import define
 
 from cloudshell.cli.command_template.command_template_executor import (
     CommandTemplateExecutor,
 )
-
 from cloudshell.cli.service.cli_service import CliService
 
 from cloudshell.firewall.paloalto.panos.command_templates import configuration, firmware
@@ -40,7 +39,7 @@ class SystemConfigurationActions:
             timeout=timeout,
         ).execute_command(filename=destination)
 
-        pattern = r"Config saved to {dst_file}".format(dst_file=destination)
+        pattern = rf"Config saved to {destination}"
         status_match = re.search(pattern, output, re.IGNORECASE)
 
         if not status_match:
@@ -66,7 +65,7 @@ class SystemConfigurationActions:
             timeout=timeout,
         ).execute_command(filename=source)
 
-        pattern = r"Config loaded from {src_file}".format(src_file=source)
+        pattern = rf"Config loaded from {source}"
         status_match = re.search(pattern, output, re.IGNORECASE)
 
         if not status_match:
@@ -118,11 +117,9 @@ class SystemActions:
             }
 
             output = CommandTemplateExecutor(
-                self._cli_service,
-                configuration.COPY_FROM_SCP,
-                action_map=action_map
+                self._cli_service, configuration.COPY_FROM_SCP, action_map=action_map
             ).execute_command(src=src, file_type=file_type, port=port)
-            pattern = r"{} saved".format(filename)
+            pattern = rf"{filename} saved"
         else:
             raise Exception(
                 f"Import {file_type}",
@@ -135,7 +132,7 @@ class SystemActions:
             logger.error(f"Import {file_type} failed: {output}")
             raise Exception(
                 f"Import {file_type}",
-                f"Import {file_type} failed. See logs for details"
+                f"Import {file_type} failed. See logs for details",
             )
 
     def export_config(
@@ -177,11 +174,9 @@ class SystemActions:
             }
 
             output = CommandTemplateExecutor(
-                self._cli_service,
-                configuration.COPY_TO_SCP,
-                action_map=action_map
+                self._cli_service, configuration.COPY_TO_SCP, action_map=action_map
             ).execute_command(filename=config_file_name, dst=dst, port=port)
-            pattern = r"{}\s+100%".format(config_file_name)
+            pattern = rf"{config_file_name}\s+100%"
         else:
             raise Exception(
                 "Export configuration",
