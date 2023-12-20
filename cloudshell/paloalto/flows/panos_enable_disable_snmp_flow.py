@@ -7,11 +7,11 @@ from attrs import define
 
 from cloudshell.snmp.snmp_configurator import EnableDisableSnmpFlowInterface
 
-from cloudshell.firewall.paloalto.panos.command_actions.enable_disable_snmp_actions import (  # noqa: E501
+from cloudshell.paloalto.command_actions.enable_disable_snmp_actions import (  # noqa: E501
     EnableDisableSnmpV2Actions,
     EnableDisableSnmpV3Actions,
 )
-from cloudshell.firewall.paloalto.panos.command_actions.system_actions import (
+from cloudshell.paloalto.command_actions.system_actions import (
     SystemConfigurationActions,
 )
 

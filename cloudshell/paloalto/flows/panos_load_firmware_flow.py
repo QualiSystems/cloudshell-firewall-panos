@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 
 from cloudshell.shell.flows.firmware.basic_flow import AbstractFirmwareFlow
 
-from cloudshell.firewall.paloalto.panos.command_actions.system_actions import (
+from cloudshell.paloalto.command_actions.system_actions import (
     FirmwareActions,
     SystemActions,
 )
@@ -43,12 +43,7 @@ class PanOSLoadFirmwareFlow(AbstractFirmwareFlow):
         vrf_management_name: str | None,
         timeout: int,
     ) -> None:
-        """Load firmware.
-
-        Update firmware version on device by loading provided
-        :param path: full path to firmware file on ftp/tftp location
-        :param vrf_management_name: VRF Name
-        """
+        """Load firmware."""
         logger.info("Upgrading firmware")
         with self.cli_configurator.enable_mode_service() as cli_service:
             system_actions = SystemActions(cli_service)

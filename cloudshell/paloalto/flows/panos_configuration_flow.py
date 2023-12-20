@@ -9,7 +9,7 @@ from cloudshell.shell.flows.configuration.basic_flow import (
     RestoreMethod,
 )
 
-from cloudshell.firewall.paloalto.panos.command_actions.system_actions import (
+from cloudshell.paloalto.command_actions.system_actions import (
     SystemActions,
     SystemConfigurationActions,
 )
@@ -31,9 +31,8 @@ logger = logging.getLogger(__name__)
 
 
 class PanOSConfigurationFlow(AbstractConfigurationFlow):
-    MAX_CONFIG_FILE_NAME_LENGTH: ClassVar[
-        int
-    ] = 28  # max file length supported by devices
+    MAX_CONFIG_FILE_NAME_LENGTH: ClassVar[int] = 28
+    # Maximum filename length supported by devices
     # Config name example {resource_name}-{configuration_type}-{timestamp}
     #   configuration_type - running/startup = 7ch
     #   timestamp - ddmmyy-HHMMSS = 13ch

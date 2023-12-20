@@ -12,8 +12,8 @@ from cloudshell.cli.command_template.command_template_executor import (
 )
 from cloudshell.cli.service.cli_service import CliService
 
-from cloudshell.firewall.paloalto.panos.command_templates import configuration, firmware
-from cloudshell.firewall.paloalto.panos.helpers.temp_dir_context import TempDirContext
+from cloudshell.paloalto.command_templates import configuration, firmware
+from cloudshell.paloalto.helpers.temp_dir_context import TempDirContext
 
 logger = logging.getLogger(__name__)
 
@@ -227,7 +227,7 @@ class SystemActions:
     def shutdown(self, action_map=None, error_map=None):
         """Shutdown the system."""
         try:
-            CommandTemplateExecutor(
+            return CommandTemplateExecutor(
                 self._cli_service, configuration.SHUTDOWN
             ).execute_command(action_map=action_map, error_map=error_map)
         except Exception:
