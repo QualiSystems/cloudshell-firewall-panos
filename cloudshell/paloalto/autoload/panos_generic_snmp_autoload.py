@@ -7,9 +7,7 @@ from typing import TYPE_CHECKING
 
 from cloudshell.snmp.autoload.generic_snmp_autoload import GenericSNMPAutoload
 
-from cloudshell.firewall.paloalto.panos.autoload.panos_snmp_system_info import (
-    PanOSSNMPSystemInfo,
-)
+from cloudshell.paloalto.autoload.panos_snmp_system_info import PanOSSNMPSystemInfo
 
 if TYPE_CHECKING:
     from cloudshell.snmp.autoload.services.system_info_table import SnmpSystemInfo

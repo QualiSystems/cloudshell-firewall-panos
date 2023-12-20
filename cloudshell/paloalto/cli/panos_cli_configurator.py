@@ -18,7 +18,7 @@ from cloudshell.cli.service.command_mode_helper import CommandModeHelper
 from cloudshell.cli.session.ssh_session import SSHSession
 from cloudshell.cli.session.telnet_session import TelnetSession
 
-from cloudshell.firewall.paloalto.panos.cli.panos_command_modes import (
+from cloudshell.paloalto.cli.panos_command_modes import (
     ConfigCommandMode,
     DefaultCommandMode,
 )

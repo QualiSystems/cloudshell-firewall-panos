@@ -8,7 +8,7 @@ from cloudshell.cli.command_template.command_template_executor import (
     CommandTemplateExecutor,
 )
 
-from cloudshell.firewall.paloalto.panos.command_templates import enable_disable_snmp
+from cloudshell.paloalto.command_templates import enable_disable_snmp
 
 if TYPE_CHECKING:
     from cloudshell.cli.service.cli_service import CliService
