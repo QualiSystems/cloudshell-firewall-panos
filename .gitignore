@@ -1,2 +1,6 @@
 *.pyc
 .idea/
+
+/build
+/cloudshell_firewall_panos.egg-info
+/dist

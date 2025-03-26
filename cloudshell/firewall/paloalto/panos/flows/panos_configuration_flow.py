@@ -1,7 +1,9 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
+import re
 
-from cloudshell.shell.flows.configuration.basic_flow import AbstractConfigurationFlow
+from cloudshell.shell.flows.configuration.basic_flow import AbstractConfigurationFlow, \
+    AUTHORIZATION_REQUIRED_STORAGE
 from cloudshell.shell.flows.utils.networking_utils import UrlParser
 
 from cloudshell.firewall.paloalto.panos.command_actions.system_actions import SystemActions, SystemConfigurationActions
@@ -9,6 +11,7 @@ from cloudshell.firewall.paloalto.panos.command_actions.system_actions import Sy
 
 class PanOSConfigurationFlow(AbstractConfigurationFlow):
     CONF_FILE_NAME_LENGTH = 32
+    FILE_TYPE = "configuration"
 
     def __init__(self, cli_handler, resource_config, logger):
         super(PanOSConfigurationFlow, self).__init__(logger, resource_config)
@@ -127,3 +130,51 @@ class PanOSConfigurationFlow(AbstractConfigurationFlow):
         self._logger.debug("Verified configuration name: {}".format(config_name))
 
         return config_name
+
+    def _get_path(self, path=""):
+        """Validate incoming path.
+
+        If path is empty, build it from resource attributes,
+        If path is invalid - raise exception
+
+        :param path: path to remote file storage
+        :return: valid path or :raise Exception:
+        """
+        if not path:
+            host = self.resource_config.backup_location
+            if ":" not in host:
+                scheme = self.resource_config.backup_type
+                if not scheme or scheme.lower() == self.DEFAULT_BACKUP_SCHEME.lower():
+                    scheme = self._file_system
+                scheme = re.sub("(:|/+).*$", "", scheme, re.DOTALL)
+                host = re.sub("^/+", "", host)
+                host = "{}://{}".format(scheme, host)
+            path = host
+            url = UrlParser.parse_url(path)
+        else:
+            url_path = UrlParser.parse_url(path)
+            host = self.resource_config.backup_location
+            if "://" not in host:
+                scheme = self.resource_config.backup_type
+                if not scheme or scheme.lower() == self.DEFAULT_BACKUP_SCHEME.lower():
+                    scheme = self._file_system
+                scheme = re.sub("(:|/+).*$", "", scheme, re.DOTALL)
+                host = re.sub("^/+", "", host)
+                host = "{}://{}".format(scheme, host)
+
+            url = UrlParser.parse_url(host)
+            url[UrlParser.FILENAME] = url_path.get(UrlParser.FILENAME)
+
+        if url[UrlParser.SCHEME].lower() in AUTHORIZATION_REQUIRED_STORAGE:
+            if UrlParser.USERNAME not in url or not url[UrlParser.USERNAME]:
+                url[UrlParser.USERNAME] = self.resource_config.backup_user
+            if UrlParser.PASSWORD not in url or not url[UrlParser.PASSWORD]:
+                url[UrlParser.PASSWORD] = self.resource_config.backup_password
+        try:
+            result = UrlParser.build_url(url)
+        except Exception as e:
+            self._logger.error("Failed to build url: {}".format(e))
+            raise Exception(
+                "ConfigurationOperations", "Failed to build path url to remote host"
+            )
+        return result

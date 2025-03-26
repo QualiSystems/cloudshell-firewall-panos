@@ -10,6 +10,8 @@ from cloudshell.snmp.autoload.generic_snmp_autoload import (
     log_autoload_details
 )
 
+from cloudshell.firewall.paloalto.panos.autoload.palo_entity_table import \
+    PaloEntityTable
 from cloudshell.firewall.paloalto.panos.autoload.panos_snmp_system_info import PanOSSNMPSystemInfo
 
 
@@ -18,12 +20,23 @@ class PanOSGenericSNMPAutoload(GenericSNMPAutoload):
         super(PanOSGenericSNMPAutoload, self).__init__(snmp_handler, logger)
         self._if_ports_in_entity = False
         self._chassis = dict()
+        self._modules = dict()
 
     @property
     def system_info_service(self):
         if not self._system_info:
             self._system_info = PanOSSNMPSystemInfo(self.snmp_handler, self.logger)
         return self._system_info
+
+    @property
+    def entity_table_service(self):
+        if not self._entity_table:
+            self._entity_table = PaloEntityTable(
+                snmp_handler=self.snmp_handler,
+                logger=self.logger,
+                if_table=self.if_table_service,
+            )
+        return self._entity_table
 
     def discover(
         self, supported_os, resource_model, validate_module_id_by_port_name=False
@@ -49,6 +62,16 @@ class PanOSGenericSNMPAutoload(GenericSNMPAutoload):
         self.logger.info("*" * 70)
         self.logger.info("Start SNMP discovery process .....")
         self.system_info_service.fill_attributes(resource_model)
+        if resource_model.vendor.endswith("root"):
+            resource_model.vendor = resource_model.vendor.lower().replace(
+                "panroot",
+                "Palo Alto Networks."
+            )
+        if resource_model.model_name and "pa-" in resource_model.model_name.lower():
+            resource_model.model_name = resource_model.model_name.replace(
+                "pa-", "PA-"
+            )
+        self.logger.info("*" * 70)
 
         entity_chassis_tree_dict = self.entity_table_service.chassis_structure_dict
 
@@ -74,6 +97,7 @@ class PanOSGenericSNMPAutoload(GenericSNMPAutoload):
             elif isinstance(element.entity, SnmpEntityTable.ENTITY_MODULE):
                 module = self._get_module_attributes(element, parent)
                 if module:
+                    self._modules[element.id] = module
                     self._build_structure(element.child_list, module)
 
             elif isinstance(element.entity, SnmpEntityTable.ENTITY_POWER_PORT):
@@ -96,10 +120,43 @@ class PanOSGenericSNMPAutoload(GenericSNMPAutoload):
                     re.IGNORECASE
                 )
                 if match:
-                    parent_element = self._chassis.get(match.groupdict().get("ch_index"))
+                    parent_id = match.groupdict().get("ch_index")
+                    if not self.entity_table_service.modules_dict:
+                        parent_element = self._chassis.get(
+                            parent_id
+                        )
+                    else:
+                        parent_element = self._modules.get(
+                            parent_id
+                        )
+                        if not parent_element:
+                            module = self.entity_table_service.modules_dict.get(
+                                parent_id
+                            )
+                            if module:
+                                if len(self._chassis) == 1:
+                                    chassis = list(self._chassis.values())[0]
+                                else:
+                                    chassis_index = (
+                                        self.entity_table_service.get_parent_chassis(
+                                            module
+                                        )
+                                    )
+                                    chassis = self._chassis.get(chassis_index)
+
+                                parent_element = self._get_module_attributes(
+                                    module,
+                                    chassis
+                                )
+                                self._modules[parent_id] = parent_element
+                    port_name = re.sub(
+                        "node\d+:",
+                        "",
+                        interface.port_name.replace("/", "-")
+                        )
                     port_object = self._resource_model.entities.Port(
                         index=if_index,
-                        name=interface.port_name.replace("/", "-")
+                        name=port_name,
                     )
 
                     port_object.mac_address = interface.if_mac
