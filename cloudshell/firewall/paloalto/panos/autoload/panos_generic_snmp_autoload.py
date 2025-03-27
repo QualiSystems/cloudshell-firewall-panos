@@ -67,10 +67,12 @@ class PanOSGenericSNMPAutoload(GenericSNMPAutoload):
                 "panroot",
                 "Palo Alto Networks."
             )
+        if resource_model.model and not resource_model.model_name:
+            resource_model.model_name = resource_model.model
         if resource_model.model_name and "pa-" in resource_model.model_name.lower():
-            resource_model.model_name = resource_model.model_name.replace(
-                "pa-", "PA-"
-            )
+            model_name = re.sub("[Pp][Aa]-", "PA-", resource_model.model_name)
+            resource_model.model = model_name
+            resource_model.model_name = model_name
         self.logger.info("*" * 70)
 
         entity_chassis_tree_dict = self.entity_table_service.chassis_structure_dict
