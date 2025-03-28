@@ -1,14 +1,18 @@
 #!/usr/bin/python
-# -*- coding: utf-8 -*-
 
-from cloudshell.firewall.paloalto.panos.command_actions.system_actions import SystemConfigurationActions
-from cloudshell.firewall.paloalto.panos.command_actions.enable_disable_snmp_actions import \
-    EnableDisableSnmpV2Actions, EnableDisableSnmpV3Actions
+from cloudshell.firewall.paloalto.panos.command_actions.enable_disable_snmp_actions import (
+    EnableDisableSnmpV2Actions,
+    EnableDisableSnmpV3Actions,
+)
+from cloudshell.firewall.paloalto.panos.command_actions.system_actions import (
+    SystemConfigurationActions,
+)
 
 
-class PanOSDisableSnmpFlow(object):
+class PanOSDisableSnmpFlow:
     def __init__(self, cli_handler, logger):
         """Enable snmp flow.
+
         :param cli_handler:
         :type cli_handler: CliHandler
         :param logger:
@@ -23,12 +27,16 @@ class PanOSDisableSnmpFlow(object):
         ) as config_session:
             if "3" in snmp_parameters.version:
                 self._logger.info("Start removing SNMP v3 configuration")
-                snmp_actions = EnableDisableSnmpV3Actions(config_session,
-                                                          self._logger,
-                                                          snmp_parameters.snmp_user,
-                                                          snmp_parameters.snmp_password,
-                                                          snmp_parameters.snmp_private_key)
-                system_actions = SystemConfigurationActions(config_session, self._logger)
+                snmp_actions = EnableDisableSnmpV3Actions(
+                    config_session,
+                    self._logger,
+                    snmp_parameters.snmp_user,
+                    snmp_parameters.snmp_password,
+                    snmp_parameters.snmp_private_key,
+                )
+                system_actions = SystemConfigurationActions(
+                    config_session, self._logger
+                )
 
                 snmp_actions.disable_snmp()
                 system_actions.commit_changes()
@@ -37,11 +45,14 @@ class PanOSDisableSnmpFlow(object):
             else:
                 community = snmp_parameters.snmp_community
 
-                self._logger.info("Start removing SNMP community {}".format(community))
-                snmp_actions = EnableDisableSnmpV2Actions(config_session, self._logger, community)
-                system_actions = SystemConfigurationActions(config_session, self._logger)
+                self._logger.info(f"Start removing SNMP community {community}")
+                snmp_actions = EnableDisableSnmpV2Actions(
+                    config_session, self._logger, community
+                )
+                system_actions = SystemConfigurationActions(
+                    config_session, self._logger
+                )
                 snmp_actions.disable_snmp()
                 system_actions.commit_changes()
 
-                self._logger.info("SNMP community {} removed".format(community))
-
+                self._logger.info(f"SNMP community {community} removed")

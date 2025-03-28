@@ -2,7 +2,7 @@ from cloudshell.snmp.autoload.constants.entity_constants import ENTITY_OS_VERSIO
 from cloudshell.snmp.autoload.core.snmp_autoload_error import GeneralAutoloadError
 from cloudshell.snmp.autoload.domain.entity.snmp_entity_base import BaseEntity
 from cloudshell.snmp.autoload.domain.entity.snmp_entity_element import Element
-from cloudshell.snmp.autoload.domain.entity.snmp_entity_struct import Chassis, Module
+from cloudshell.snmp.autoload.domain.entity.snmp_entity_struct import Module
 from cloudshell.snmp.autoload.helper.entity_quali_mib_table import EntityQualiMibTable
 from cloudshell.snmp.autoload.snmp_entity_table import SnmpEntityTable
 
@@ -18,7 +18,6 @@ class ModuleEntity(BaseEntity):
 
 
 class PaloEntityTable(SnmpEntityTable):
-
     @property
     def modules_dict(self):
         return self._module_tree
@@ -29,7 +28,6 @@ class PaloEntityTable(SnmpEntityTable):
             parent = self._raw_physical_indexes.get(parent.parent_id)
         else:
             return parent.index
-
 
     def _get_entity_table(self):
         """Read Entity-MIB and filter out device's structure and all it's elements.
@@ -50,7 +48,7 @@ class PaloEntityTable(SnmpEntityTable):
             entity = BaseEntity(self._snmp, entity_index)
             if "module" in entity.entity_class:
                 if self.module_exclude_pattern and self.module_exclude_pattern.search(
-                        entity.vendor_type
+                    entity.vendor_type
                 ):
                     continue
                 module_entity = Module(entity)
@@ -60,7 +58,6 @@ class PaloEntityTable(SnmpEntityTable):
                     element.id = parent.position_id
 
                 self._module_tree[element.id] = element
-
 
             elif "powersupply" in entity.entity_class.lower():
                 self._load_power_port(self.ENTITY_POWER_PORT(entity))

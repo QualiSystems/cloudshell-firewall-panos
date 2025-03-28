@@ -1,26 +1,27 @@
 #!/usr/bin/python
-# -*- coding: utf-8 -*-
 
 import re
 
+from cloudshell.firewall.paloalto.panos.autoload.palo_entity_table import (
+    PaloEntityTable,
+)
+from cloudshell.firewall.paloalto.panos.autoload.panos_snmp_system_info import (
+    PanOSSNMPSystemInfo,
+)
 from cloudshell.snmp.autoload.generic_snmp_autoload import (
+    GeneralAutoloadError,
     GenericSNMPAutoload,
     SnmpEntityTable,
-    GeneralAutoloadError,
-    log_autoload_details
+    log_autoload_details,
 )
-
-from cloudshell.firewall.paloalto.panos.autoload.palo_entity_table import \
-    PaloEntityTable
-from cloudshell.firewall.paloalto.panos.autoload.panos_snmp_system_info import PanOSSNMPSystemInfo
 
 
 class PanOSGenericSNMPAutoload(GenericSNMPAutoload):
     def __init__(self, snmp_handler, logger):
-        super(PanOSGenericSNMPAutoload, self).__init__(snmp_handler, logger)
+        super().__init__(snmp_handler, logger)
         self._if_ports_in_entity = False
-        self._chassis = dict()
-        self._modules = dict()
+        self._chassis = {}
+        self._modules = {}
 
     @property
     def system_info_service(self):
@@ -64,8 +65,7 @@ class PanOSGenericSNMPAutoload(GenericSNMPAutoload):
         self.system_info_service.fill_attributes(resource_model)
         if resource_model.vendor.endswith("root"):
             resource_model.vendor = resource_model.vendor.lower().replace(
-                "panroot",
-                "Palo Alto Networks."
+                "panroot", "Palo Alto Networks."
             )
         if resource_model.model and not resource_model.model_name:
             resource_model.model_name = resource_model.model
@@ -110,27 +110,23 @@ class PanOSGenericSNMPAutoload(GenericSNMPAutoload):
                 self._get_ports_attributes(element, parent)
 
     def _add_ports_from_iftable(self):
-        """Get resource details and attributes for every port base on data from IFMIB Table"""
+        """Get device details and attributes for every port base on data from IF Table."""
         self.logger.info("Loading Ports ...")
 
         for if_index, interface in self.if_table_service.if_ports.items():
             if self.if_table_service.PORT_VALID_TYPE.search(interface.if_type):
-                self.logger.debug("Trying to load port {}:".format(interface.port_name))
+                self.logger.debug(f"Trying to load port {interface.port_name}:")
                 match = re.search(
                     r"ethernet(?P<ch_index>\d+)/(?P<if_index>\d+)",
                     interface.if_descr_name,
-                    re.IGNORECASE
+                    re.IGNORECASE,
                 )
                 if match:
                     parent_id = match.groupdict().get("ch_index")
                     if not self.entity_table_service.modules_dict:
-                        parent_element = self._chassis.get(
-                            parent_id
-                        )
+                        parent_element = self._chassis.get(parent_id)
                     else:
-                        parent_element = self._modules.get(
-                            parent_id
-                        )
+                        parent_element = self._modules.get(parent_id)
                         if not parent_element:
                             module = self.entity_table_service.modules_dict.get(
                                 parent_id
@@ -147,15 +143,12 @@ class PanOSGenericSNMPAutoload(GenericSNMPAutoload):
                                     chassis = self._chassis.get(chassis_index)
 
                                 parent_element = self._get_module_attributes(
-                                    module,
-                                    chassis
+                                    module, chassis
                                 )
                                 self._modules[parent_id] = parent_element
                     port_name = re.sub(
-                        "node\d+:",
-                        "",
-                        interface.port_name.replace("/", "-")
-                        )
+                        r"node\d+:", "", interface.port_name.replace("/", "-")
+                    )
                     port_object = self._resource_model.entities.Port(
                         index=if_index,
                         name=port_name,
@@ -173,6 +166,6 @@ class PanOSGenericSNMPAutoload(GenericSNMPAutoload):
                     port_object.ipv6_address = interface.ipv6_address
 
                     parent_element.connect_port(port_object)
-                    self.logger.info("Added {0} Port".format(interface.port_name))
+                    self.logger.info(f"Added {interface.port_name} Port")
 
         self.logger.info("Building Ports completed")

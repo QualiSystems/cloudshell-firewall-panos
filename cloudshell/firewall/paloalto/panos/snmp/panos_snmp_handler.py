@@ -1,12 +1,14 @@
 #!/usr/bin/python
-# -*- coding: utf-8 -*-
+from cloudshell.firewall.paloalto.panos.flows.panos_disable_snmp_flow import (
+    PanOSDisableSnmpFlow,
+)
+from cloudshell.firewall.paloalto.panos.flows.panos_enable_snmp_flow import (
+    PanOSEnableSnmpFlow,
+)
 from cloudshell.snmp.snmp_configurator import (
     EnableDisableSnmpConfigurator,
     EnableDisableSnmpFlowInterface,
 )
-
-from cloudshell.firewall.paloalto.panos.flows.panos_enable_snmp_flow import PanOSEnableSnmpFlow
-from cloudshell.firewall.paloalto.panos.flows.panos_disable_snmp_flow import PanOSDisableSnmpFlow
 
 
 class PanOSEnableDisableSnmpFlow(EnableDisableSnmpFlowInterface):
@@ -15,6 +17,7 @@ class PanOSEnableDisableSnmpFlow(EnableDisableSnmpFlowInterface):
 
     def __init__(self, cli_handler, logger):
         """Enable snmp flow.
+
         :param cli_handler:
         :param logger:
         :return:
@@ -37,6 +40,4 @@ class PanOSSnmpHandler(EnableDisableSnmpConfigurator):
     def __init__(self, resource_config, logger, cli_handler):
         self.cli_handler = cli_handler
         enable_disable_snmp_flow = PanOSEnableDisableSnmpFlow(self.cli_handler, logger)
-        super(PanOSSnmpHandler, self).__init__(
-            enable_disable_snmp_flow, resource_config, logger
-        )
+        super().__init__(enable_disable_snmp_flow, resource_config, logger)
