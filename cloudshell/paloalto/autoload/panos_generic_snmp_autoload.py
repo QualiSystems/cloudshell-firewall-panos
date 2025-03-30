@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING
 
 from cloudshell.snmp.autoload.generic_snmp_autoload import GenericSNMPAutoload
 
+from cloudshell.paloalto.autoload.panos_if_table import PANOSIfTable
 from cloudshell.paloalto.autoload.panos_snmp_system_info import PanOSSNMPSystemInfo
 
 if TYPE_CHECKING:
@@ -23,3 +24,13 @@ class PanOSGenericSNMPAutoload(GenericSNMPAutoload):
     @cached_property
     def system_info_service(self) -> SnmpSystemInfo:
         return PanOSSNMPSystemInfo(self.snmp_handler, logger)
+
+    @property
+    def port_table_service(self) -> PANOSIfTable:
+        if not self._port_table_service:
+            self._port_table_service = PANOSIfTable(
+                resource_model=self._resource_model,
+                ports_snmp_table=self.port_snmp_table,
+                logger=self.logger,
+            )
+        return self._port_table_service
