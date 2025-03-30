@@ -2,29 +2,29 @@
   "imports": {
     "class": "imports",
     "SNMPv2-CONF": [
-      "NOTIFICATION-GROUP",
-      "MODULE-COMPLIANCE"
+      "MODULE-COMPLIANCE",
+      "NOTIFICATION-GROUP"
     ],
     "SNMPv2-SMI": [
+      "OBJECT-IDENTITY",
+      "Integer32",
+      "Gauge32",
+      "Bits",
       "Unsigned32",
       "enterprises",
-      "NOTIFICATION-TYPE",
-      "Gauge32",
-      "MODULE-IDENTITY",
       "OBJECT-TYPE",
-      "Bits",
-      "OBJECT-IDENTITY",
-      "iso",
-      "MibIdentifier",
-      "TimeTicks",
-      "Counter32",
-      "Integer32",
       "IpAddress",
-      "Counter64"
+      "NOTIFICATION-TYPE",
+      "Counter64",
+      "iso",
+      "Counter32",
+      "MODULE-IDENTITY",
+      "TimeTicks",
+      "MibIdentifier"
     ],
     "SNMPv2-TC": [
-      "TEXTUAL-CONVENTION",
-      "DisplayString"
+      "DisplayString",
+      "TEXTUAL-CONVENTION"
     ]
   },
   "panGlobalRegModule": {
@@ -82,8 +82,8 @@
   },
   "meta": {
     "comments": [
-      "ASN.1 source file://d:\\Data\\MIBS\\text_mibs\\paloalto\\PAN-GLOBAL-REG",
-      "Produced by pysmi-0.3.4 at Tue Nov  7 09:17:15 2023",
+      "ASN.1 source file://\\Data\\MIBS\\text_mibs\\paloalto\\PAN-GLOBAL-REG",
+      "Produced by pysmi-0.3.4 at Sat Mar 29 23:54:32 2025",
       "On host ? platform ? version ? by user ?",
       "Using Python version 3.7.9 (tags/v3.7.9:13c94747c7, Aug 17 2020, 18:01:55) [MSC v.1900 32 bit (Intel)]"
     ],

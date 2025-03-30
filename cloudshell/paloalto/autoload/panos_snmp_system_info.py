@@ -21,3 +21,17 @@ class PanOSSNMPSystemInfo(SnmpSystemInfo):
             result = ""
 
         return result
+
+    def fill_attributes(self, resource):
+        """Fill attributes."""
+        super().fill_attributes(resource)
+        if resource.vendor.endswith("root"):
+            resource.vendor = resource.vendor.lower().replace(
+                "panroot", "Palo Alto Networks."
+            )
+        if resource.model and not resource.model_name:
+            resource.model_name = resource.model
+        if resource.model_name and "pa" in resource.model_name.lower():
+            model_name = re.sub("[Pp][Aa][-_]", "PA-", resource.model_name)
+            resource.model = model_name
+            resource.model_name = model_name
